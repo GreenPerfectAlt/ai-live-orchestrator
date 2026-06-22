@@ -63,6 +63,7 @@ install_menu.bat
 
 Use the menu:
 
+```text
 [1] Install base app dependencies
 [2] Install PyTorch CPU for Silero RU
 [3] Full install: base deps + PyTorch CPU
@@ -70,6 +71,7 @@ Use the menu:
 [5] Reset .venv
 [6] Create folders
 [0] Exit
+```
 
 Fast path:
 
@@ -78,15 +80,13 @@ install_requirements.bat
 ```
 ### 3. Add llama.cpp server
 
-Put `llama-server.exe` into the project folder.
+Put llama-server.exe into the project folder.
 
 Expected:
 
-```text
 ai-live-orchestrator\llama-server.exe
-```
 
-Or edit `run_llama*.bat`.
+Or edit LLAMA_SERVER_EXE in run_llama_CUSTOM_TEMPLATE.bat.
 
 ### 4. Add models
 
@@ -111,17 +111,21 @@ models\PUT_MODELS_HERE.txt
 
 ### 5. Run
 
-Example:
+Edit:
 
-```bat
-run_llama_e2b.bat
-```
+run_llama_CUSTOM_TEMPLATE.bat
+
+Configure the block:
+
+USER CONFIG - REQUIRED
+
+Then run:
+
+run_llama_CUSTOM_TEMPLATE.bat
 
 Open:
 
-```text
 http://127.0.0.1:8000
-```
 
 ## Voice modes
 
@@ -139,7 +143,23 @@ Default newest model env:
 set "SILERO_MODEL=v5_5_ru"
 set "SILERO_MODEL_URL=https://models.silero.ai/models/tts/ru/v5_5_ru.pt"
 ```
-## Gemma 4 Litertlm
+## Gemma 4 / GGUF / LiteRT-LM notes
+
+The main public runtime path in this repository is:
+
+llama.cpp
+llama-server.exe
+*.gguf
+mmproj*.gguf
+run_llama_CUSTOM_TEMPLATE.bat
+
+Gemma 4 is the target model family for local experiments.
+
+GGUF is used as the practical local model format for llama.cpp.
+
+LiteRT-LM / .litertlm is a related on-device model runtime direction, but the main user-facing setup in this repository is currently based on llama.cpp / GGUF.
+
+Model references:
 
 https://huggingface.co/google/gemma-4-E2B-it-qat-q4_0-unquantized
 
@@ -280,6 +300,12 @@ Additional technologies used or targeted in this fork:
 * WebSocket
 
 ## License
+
+This project is licensed under Apache License 2.0.
+
+See:
+
+LICENSE
 
 The original Parlor project is also licensed under Apache License 2.0.
 
