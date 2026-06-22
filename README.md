@@ -262,8 +262,6 @@ Additional technologies used or targeted in this fork:
 
 ## License
 
-This project is licensed under Apache License 2.0.
-
 The original Parlor project is also licensed under Apache License 2.0.
 
 This repository keeps attribution and documents major modifications.
