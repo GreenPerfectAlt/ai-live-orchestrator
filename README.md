@@ -122,4 +122,4 @@ set "SILERO_MODEL_URL=https://models.silero.ai/models/tts/ru/v5_5_ru.pt"
 ```
 https://huggingface.co/google/gemma-4-E2B-it-qat-q4_0-unquantized
 
-https://huggingface.co/google/gemma-4-E2B-it-qat-q4_0-unquantized
+https://huggingface.co/google/gemma-4-E4B-it-qat-q4_0-unquantized
