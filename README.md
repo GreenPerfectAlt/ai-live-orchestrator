@@ -125,3 +125,151 @@ set "SILERO_MODEL_URL=https://models.silero.ai/models/tts/ru/v5_5_ru.pt"
 https://huggingface.co/google/gemma-4-E2B-it-qat-q4_0-unquantized
 
 https://huggingface.co/google/gemma-4-E4B-it-qat-q4_0-unquantized
+
+## Custom launcher template
+
+This repository includes a user-editable launcher template:
+
+```bat
+run_llama_CUSTOM_TEMPLATE.bat
+```
+
+The launcher is meant for custom local GGUF setups.
+
+Edit the top block first:
+
+```text
+USER CONFIG - REQUIRED
+```
+
+Main fields:
+
+```bat
+set "LLAMA_SERVER_EXE=%PROJECT_ROOT%llama-server.exe"
+set "MODEL_PATH=%PROJECT_ROOT%models\PUT-YOUR-MODEL.gguf"
+set "USE_MMPROJ=1"
+set "MM_PROJ_PATH=%PROJECT_ROOT%models\PUT-YOUR-MMPROJ.gguf"
+set "MODEL_LABEL=PUT-YOUR-MODEL-LABEL"
+set "LLAMA_MODEL=PUT-YOUR-MODEL-ALIAS"
+```
+
+Meaning:
+
+* `LLAMA_SERVER_EXE` — path to `llama-server.exe`
+* `MODEL_PATH` — path to main `*.gguf` model
+* `USE_MMPROJ` — `1` to use vision/multimodal projector, `0` to disable it
+* `MM_PROJ_PATH` — path to `mmproj*.gguf`
+* `MODEL_LABEL` — display name for logs/UI
+* `LLAMA_MODEL` — model alias for llama.cpp OpenAI-compatible endpoint
+
+Text-only example:
+
+```bat
+set "LLAMA_SERVER_EXE=%PROJECT_ROOT%llama-server.exe"
+set "MODEL_PATH=%PROJECT_ROOT%models\my-model.gguf"
+set "USE_MMPROJ=0"
+set "MM_PROJ_PATH="
+set "MODEL_LABEL=My Local Model"
+set "LLAMA_MODEL=my-local-model"
+```
+
+Multimodal example:
+
+```bat
+set "LLAMA_SERVER_EXE=%PROJECT_ROOT%llama-server.exe"
+set "MODEL_PATH=%PROJECT_ROOT%models\gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf"
+set "USE_MMPROJ=1"
+set "MM_PROJ_PATH=%PROJECT_ROOT%models\mmproj-F16-gemma-4-E2B-it-qat.gguf"
+set "MODEL_LABEL=Gemma 4 E2B GGUF"
+set "LLAMA_MODEL=gemma-4-e2b"
+```
+
+The template checks placeholders and required files before launch.
+
+Typical errors:
+
+```text
+[ERROR] Replace PUT-YOUR placeholders first
+[ERROR] GGUF model not found
+[ERROR] mmproj file not found
+[ERROR] llama-server.exe not found
+```
+
+## Local-first design
+
+AI Live Orchestrator is built around a local-first workflow:
+
+```text
+browser UI
+WebSocket
+FastAPI backend
+llama.cpp server
+local GGUF model
+local TTS
+local visual/audio context
+```
+
+The core pipeline does not require a cloud AI inference API.
+
+Local files stay on the user's machine unless the user explicitly changes the setup.
+
+## Main changes from upstream Parlor
+
+This project was originally based on the open-source Parlor project by fikrikarim:
+
+```text
+https://github.com/fikrikarim/parlor
+```
+
+AI Live Orchestrator contains major modifications focused on:
+
+* Windows-first launch flow
+* `llama.cpp` / GGUF runtime
+* local `llama-server.exe` workflow
+* custom `.bat` launcher template
+* explicit local model paths
+* Gemma 4 GGUF setup
+* `mmproj*.gguf` multimodal projector setup
+* Silero RU / Supertonic 3 TTS options
+* local `models\` folder workflow
+* manual large-model handling
+* updated voice/multimodal orchestration
+* interruption / barge-in behavior
+* push-to-talk / mic control behavior
+
+## Acknowledgments
+
+Based on / derived from:
+
+* Parlor by fikrikarim: https://github.com/fikrikarim/parlor
+
+Original Parlor project:
+
+* License: Apache License 2.0
+* Runtime idea: on-device real-time multimodal AI
+* Original stack direction: browser mic/camera + FastAPI + local model + TTS
+
+Additional technologies used or targeted in this fork:
+
+* Gemma 4 by Google / Google DeepMind
+* llama.cpp
+* GGUF model format
+* Silero RU
+* Supertonic 3
+* Chrome SpeechRecognition
+* FastAPI
+* WebSocket
+
+## License
+
+This project is licensed under Apache License 2.0.
+
+See:
+
+```text
+LICENSE
+```
+
+The original Parlor project is also licensed under Apache License 2.0.
+
+This repository keeps attribution and documents major modifications.
