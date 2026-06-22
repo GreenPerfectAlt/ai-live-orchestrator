@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -225,10 +225,10 @@
       <span id="launcherLabel" class="badge model-label">bat: unknown</span>
     </div>
     <div class="nav-right nav-tools">
-      <button id="chatsBtn" class="btn tiny" title="Чаты">💬 chats</button>
-      <button id="settingsBtn" class="btn tiny" title="Настройки">⚙ settings</button>
+      <button id="chatsBtn" class="btn tiny" title="Chats">💬 chats</button>
+      <button id="settingsBtn" class="btn tiny" title="Settings">⚙ settings</button>
       <span id="status" class="status-pill disconnected">Disconnected</span>
-      <button id="resetBtn" class="btn tiny" title="Сбросить текущий чат">↺ reset</button>
+      <button id="resetBtn" class="btn tiny" title="Reset current chat">↺ reset</button>
     </div>
   </nav>
 
@@ -252,7 +252,7 @@
         <div class="settings-field wide">
           <label for="settingsWs">WebSocket URL</label>
           <input id="settingsWs" spellcheck="false" />
-          <div class="settings-help">Оставь пустым для текущего адреса: ws://127.0.0.1:8000/ws. Менять нужно только если фронт и backend на разных адресах.</div>
+          <div class="settings-help">Leave empty to use the current host: ws://127.0.0.1:8000/ws. Change only if frontend and backend run on different addresses.</div>
         </div>
         <div class="settings-field">
           <label for="settingsTtsEngine">TTS engine</label>
@@ -260,7 +260,7 @@
             <option value="supertonic">Supertonic 3 / quality</option>
             <option value="silero">Silero RU / fast live</option>
           </select>
-          <div class="settings-help">Supertonic 3 = красивее, но медленнее. Silero RU = быстрее и проще, лучше для live. Если Silero не установлен, bat поставит PyTorch CPU.</div>
+          <div class="settings-help">Supertonic 3 = higher quality, slower. Silero RU = faster and simpler for live mode. If Silero is missing, the launcher can install CPU PyTorch.</div>
         </div>
         <div class="settings-field">
           <label for="settingsVoice">Supertonic voice</label>
@@ -276,7 +276,7 @@
             <option value="eugene">eugene / male</option>
             <option value="random">random</option>
           </select>
-          <div class="settings-help">Работает только если TTS engine = Silero RU.</div>
+          <div class="settings-help">Works only when TTS engine = Silero RU.</div>
         </div>
         <div class="settings-field">
           <label for="settingsSileroSpeed">Silero speed</label>
@@ -286,20 +286,20 @@
         <div class="settings-field">
           <label for="settingsBrowserStt">Mic speech recognition</label>
           <select id="settingsBrowserStt"><option value="1">On</option><option value="0">Off</option></select>
-          <div class="settings-help">Это НЕ озвучка и НЕ робоголос. Chrome только распознаёт твой микрофон в текст для Auto Mic.</div>
+          <div class="settings-help">This is not voice output and not a robot voice. Chrome only converts your microphone speech to text for Auto Mic.</div>
         </div>
         <div class="settings-field">
           <label for="settingsSendRawAudio">Gemma mic input mode</label>
           <select id="settingsSendRawAudio">
-            <option value="stt">STT text — быстро</option>
-            <option value="native">Native audio — WAV в Gemma</option>
+            <option value="stt">STT text — fast</option>
+            <option value="native">Native audio — WAV to Gemma</option>
             <option value="hybrid">Hybrid — STT + WAV</option>
           </select>
-          <div class="settings-help">Только способ отправки микрофона в Gemma. Голоса/TTS не трогались.</div>
+          <div class="settings-help">Only controls how microphone input is sent to Gemma. Voice output/TTS is separate.</div>
         </div>
         <div class="settings-field">
           <label for="settingsSttLang">STT lang</label>
-          <input id="settingsSttLang" placeholder="ru-RU" />
+          <input id="settingsSttLang" placeholder="en-US" />
         </div>
         <div class="settings-field">
           <label for="settingsMaxTokens">Max output tokens (-1/0 = unlimited)</label>
@@ -311,7 +311,7 @@
         <div class="settings-field"><label for="settingsHistoryTurns">History messages</label><input id="settingsHistoryTurns" type="number" min="2" max="200" step="2" /></div>
         <div class="settings-field"><label for="settingsCameraMax">Camera max width</label><input id="settingsCameraMax" type="number" min="224" max="1024" step="32" /></div>
         <div class="settings-field"><label for="settingsAttachCameraAlways">Send camera every turn</label><select id="settingsAttachCameraAlways"><option value="0">Off / only when asked</option><option value="1">On / old camera mode</option></select></div>
-        <div class="settings-field"><label for="settingsVisionMode">Vision send mode</label><select id="settingsVisionMode"><option value="auto">Auto / only when asked</option><option value="always">Always / AI Studio live</option><option value="off">Off / fastest chat</option></select><div class="settings-help">Auto быстрее: screen/camera/images уходят только если вопрос явно про визуал. Always медленнее, но ближе к Live.</div></div>
+        <div class="settings-field"><label for="settingsVisionMode">Vision send mode</label><select id="settingsVisionMode"><option value="auto">Auto / only when asked</option><option value="always">Always / AI Studio live</option><option value="off">Off / fastest chat</option></select><div class="settings-help">Auto is faster: screen/camera/images are sent only when the prompt asks for visual context. Always is slower, but closer to live vision mode.</div></div>
         <div class="settings-field"><label for="settingsScreenMax">Screen max width</label><input id="settingsScreenMax" type="number" min="224" max="1024" step="32" /></div>
         <div class="settings-field"><label for="settingsPdfMax">PDF max width</label><input id="settingsPdfMax" type="number" min="224" max="1024" step="32" /></div>
         <div class="settings-field"><label for="settingsVideoMax">Video max width</label><input id="settingsVideoMax" type="number" min="224" max="1024" step="32" /></div>
@@ -323,11 +323,11 @@
         <div class="settings-field"><label for="settingsVoiceThreshold">Voice threshold</label><input id="settingsVoiceThreshold" type="number" min="0.002" max="0.2" step="0.002" /></div>
         <div class="settings-field"><label for="settingsSilenceMs">Silence stop ms</label><input id="settingsSilenceMs" type="number" min="300" max="3000" step="50" /></div>
         <div class="settings-field"><label for="settingsMinSpeechMs">Min speech ms</label><input id="settingsMinSpeechMs" type="number" min="250" max="2000" step="50" /></div>
-        <div class="settings-field"><label for="settingsBargeIn">Interrupt while assistant speaks</label><select id="settingsBargeIn"><option value="1">On</option><option value="0">Off</option></select><div class="settings-help">Если ассистент затыкается сам от своего голоса — выключи или повысь sensitivity.</div></div>
-        <div class="settings-field"><label for="settingsBargeInSensitivity">Barge-in sensitivity</label><input id="settingsBargeInSensitivity" type="number" min="1.0" max="3.0" step="0.05" /><div class="settings-help">Больше = труднее перебить, меньше = быстрее перебивает.</div></div>
+        <div class="settings-field"><label for="settingsBargeIn">Interrupt while assistant speaks</label><select id="settingsBargeIn"><option value="1">On</option><option value="0">Off</option></select><div class="settings-help">If the assistant interrupts itself from speaker echo, turn this off or increase sensitivity.</div></div>
+        <div class="settings-field"><label for="settingsBargeInSensitivity">Barge-in sensitivity</label><input id="settingsBargeInSensitivity" type="number" min="1.0" max="3.0" step="0.05" /><div class="settings-help">Higher = harder to interrupt, lower = easier to interrupt.</div></div>
       </div>
       <div class="settings-help">
-        Live capture пишет экран/камеру/видео в кольцевой буфер. В режиме Auto кадры отправляются только когда вопрос про визуал — это намного быстрее. Для постоянного AI Studio-like поведения поставь Vision send mode = Always.
+        Live capture writes screen/camera/video frames into a ring buffer. In Auto mode, frames are sent only when the prompt asks for visual context, which is much faster. For persistent AI Studio-like behavior, set Vision send mode = Always.
       </div>
     </div>
     <div class="modal-footer">
@@ -358,16 +358,16 @@
     <section class="chat-column">
       <div class="system-strip">
         <span class="badge">system</span>
-        <input id="systemPrompt" placeholder="Системный промпт, можно оставить пустым" />
+        <input id="systemPrompt" placeholder="System prompt, optional" />
       </div>
       <div id="transcript" class="transcript"><div id="messages" class="transcript-inner"></div></div>
       <div class="chat-footer">
         <div class="state"><span id="stateDot" class="state-dot"></span><span id="stateText">Loading...</span><canvas id="waveform" class="wave"></canvas></div>
         <div class="input-wrap">
-          <input id="textInput" autocomplete="off" placeholder="Напиши сообщение или зажми микрофон..." />
-          <button id="autoMicBtn" class="btn tiny" title="Голосовая активация без зажатия">Auto Mic</button>
-          <button id="micBtn" class="btn icon mic-btn" title="Зажать и говорить">🎙</button>
-          <button id="sendBtn" class="btn icon" title="Отправить">➤</button>
+          <input id="textInput" autocomplete="off" placeholder="Type a message or hold the mic..." />
+          <button id="autoMicBtn" class="btn tiny" title="Voice activation without holding the mic">Auto Mic</button>
+          <button id="micBtn" class="btn icon mic-btn" title="Hold to talk">🎙</button>
+          <button id="sendBtn" class="btn icon" title="Send">➤</button>
         </div>
       </div>
     </section>
@@ -459,9 +459,9 @@ window.addEventListener('storage', (ev)=>{
 
 
 // ── Persistent chats + settings ──
-const SETTINGS_KEY = 'parlor.jarvis.settings.v47';
-const CHATS_KEY = 'parlor.jarvis.chats.v7';
-const ACTIVE_CHAT_KEY = 'parlor.jarvis.activeChat.v7';
+const SETTINGS_KEY = 'parlor.jarvis.settings.v48';
+const CHATS_KEY = 'parlor.jarvis.chats.v8';
+const ACTIVE_CHAT_KEY = 'parlor.jarvis.activeChat.v8';
 const DEFAULT_SETTINGS = {
   wsUrl: '', voice: '', temperature: 1.0, top_p: 1.0, top_k: 0,
   max_output_tokens: 0, historyMessages: 20,
@@ -469,12 +469,12 @@ const DEFAULT_SETTINGS = {
   liveFps: 1.0, liveFrames: 2, autoVoice: false, startAutoWithScreen: true, voiceThreshold: 0.04, silenceStopMs: 950, minSpeechMs: 550,
   bargeIn: 1, bargeInGraceMs: 250, bargeInSensitivity: 1.35,
   attachCameraAlways: 0, visionMode: 'auto',
-  browserStt: 1, sttLang: 'ru-RU', sendRawAudio: 0, audioInputMode: 'stt', ttsMode: 'server', browserTtsRate: 1.0,
+  browserStt: 1, sttLang: 'en-US', sendRawAudio: 0, audioInputMode: 'stt', ttsMode: 'server', browserTtsRate: 1.0,
   ttsEngine: 'supertonic', sileroSpeaker: 'baya', sileroSpeed: 1.0,
 };
 let appSettings = loadSettings();
 let chats = loadChats();
-let activeChatId = localStorage.getItem(ACTIVE_CHAT_KEY) || (chats[0] && chats[0].id) || createChatRecord('Новый чат').id;
+let activeChatId = localStorage.getItem(ACTIVE_CHAT_KEY) || (chats[0] && chats[0].id) || createChatRecord('New chat').id;
 let suppressChatSave = false;
 
 function clampNum(v, d, lo, hi){ v = Number(v); if(!Number.isFinite(v)) return d; return Math.max(lo, Math.min(hi, v)); }
@@ -482,14 +482,14 @@ function loadSettings(){ try { return {...DEFAULT_SETTINGS, ...(JSON.parse(local
 function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings)); }
 function defaultWsUrl(){ return `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`; }
 function getActiveWsUrl(){ return (appSettings.wsUrl || '').trim() || defaultWsUrl(); }
-function createChatRecord(title){ const c={id:'chat-'+Date.now()+'-'+Math.random().toString(16).slice(2), title:title||'Новый чат', createdAt:Date.now(), updatedAt:Date.now(), systemPrompt:'', messages:[]}; chats.unshift(c); persistChats(); return c; }
-function loadChats(){ try { const arr=JSON.parse(localStorage.getItem(CHATS_KEY)||'[]'); if(Array.isArray(arr) && arr.length) return arr; } catch {} return [{id:'chat-default',title:'Новый чат',createdAt:Date.now(),updatedAt:Date.now(),systemPrompt:'',messages:[]}]; }
+function createChatRecord(title){ const c={id:'chat-'+Date.now()+'-'+Math.random().toString(16).slice(2), title:title||'New chat', createdAt:Date.now(), updatedAt:Date.now(), systemPrompt:'', messages:[]}; chats.unshift(c); persistChats(); return c; }
+function loadChats(){ try { const arr=JSON.parse(localStorage.getItem(CHATS_KEY)||'[]'); if(Array.isArray(arr) && arr.length) return arr; } catch {} return [{id:'chat-default',title:'New chat',createdAt:Date.now(),updatedAt:Date.now(),systemPrompt:'',messages:[]}]; }
 function persistChats(){ localStorage.setItem(CHATS_KEY, JSON.stringify(chats.slice(0,60))); }
-function currentChat(){ let c=chats.find(x=>x.id===activeChatId); if(!c){ c=createChatRecord('Новый чат'); activeChatId=c.id; } return c; }
+function currentChat(){ let c=chats.find(x=>x.id===activeChatId); if(!c){ c=createChatRecord('New chat'); activeChatId=c.id; } return c; }
 function saveActiveChat(){ if(suppressChatSave) return; const c=currentChat(); c.messages = messages.filter(m=>!m.pending).map(m=>({id:m.id,role:m.role,text:m.text||'',meta:m.meta||''})); c.systemPrompt = $('systemPrompt')?.value || ''; c.updatedAt = Date.now(); persistChats(); renderChatList(); }
 function loadActiveChat(){ const c=currentChat(); suppressChatSave = true; messages = (c.messages||[]).map(m=>({...m,pending:false,id:nowId()})); if($('systemPrompt')) $('systemPrompt').value = c.systemPrompt || ''; renderMessages(); suppressChatSave = false; renderChatList(); }
-function maybeTitleChat(text){ const c=currentChat(); if(!c || (c.title && c.title !== 'Новый чат')) return; const t=String(text||'').trim().replace(/\s+/g,' ').slice(0,42); if(t){ c.title=t; persistChats(); renderChatList(); } }
-function renderChatList(){ const list=$('chatList'); if(!list) return; list.innerHTML=''; const sorted=[...chats].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)); for(const c of sorted){ const btn=document.createElement('button'); btn.className='chat-item'+(c.id===activeChatId?' active':''); btn.dataset.id=c.id; const count=(c.messages||[]).length; const date=new Date(c.updatedAt||Date.now()).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); btn.innerHTML=`<div class="chat-item-title">${escapeHtml(c.title||'Новый чат')}</div><div class="chat-item-meta">${count} msg · ${date}</div>`; btn.onclick=()=>{ activeChatId=c.id; localStorage.setItem(ACTIVE_CHAT_KEY, activeChatId); loadActiveChat(); closeChats(); }; list.appendChild(btn); } }
+function maybeTitleChat(text){ const c=currentChat(); if(!c || (c.title && c.title !== 'New chat')) return; const t=String(text||'').trim().replace(/\s+/g,' ').slice(0,42); if(t){ c.title=t; persistChats(); renderChatList(); } }
+function renderChatList(){ const list=$('chatList'); if(!list) return; list.innerHTML=''; const sorted=[...chats].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)); for(const c of sorted){ const btn=document.createElement('button'); btn.className='chat-item'+(c.id===activeChatId?' active':''); btn.dataset.id=c.id; const count=(c.messages||[]).length; const date=new Date(c.updatedAt||Date.now()).toLocaleString('en-US',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); btn.innerHTML=`<div class="chat-item-title">${escapeHtml(c.title||'New chat')}</div><div class="chat-item-meta">${count} msg · ${date}</div>`; btn.onclick=()=>{ activeChatId=c.id; localStorage.setItem(ACTIVE_CHAT_KEY, activeChatId); loadActiveChat(); closeChats(); }; list.appendChild(btn); } }
 function openChats(){ $('drawerBackdrop')?.classList.add('open'); $('chatDrawer')?.classList.add('open'); renderChatList(); }
 function closeChats(){ $('drawerBackdrop')?.classList.remove('open'); $('chatDrawer')?.classList.remove('open'); }
 function openSettings(){ fillSettingsForm(); $('settingsBackdrop')?.classList.add('open'); $('settingsModal')?.classList.add('open'); }
@@ -587,7 +587,7 @@ function renderMessages(){
 function addMessage(role, text, meta='', pending=false){ const m={id:nowId(),role,text,meta,pending}; messages.push(m); renderMessages(); return m.id; }
 function updateMessage(id, patch){ const m=messages.find(x=>x.id===id); if(m){ Object.assign(m,patch); renderMessages(); } }
 function deleteMessage(id){ messages = messages.filter(m => m.id !== id); renderMessages(); }
-function editMessage(id){ const m=messages.find(x=>x.id===id); if(!m) return; const next = prompt('Редактировать сообщение:', m.text || ''); if(next!==null){ m.text = next; m.pending=false; renderMessages(); } }
+function editMessage(id){ const m=messages.find(x=>x.id===id); if(!m) return; const next = prompt('Edit message:', m.text || ''); if(next!==null){ m.text = next; m.pending=false; renderMessages(); } }
 // v18: unified message action handler is installed later.
 function historyForServer(){ const n=Math.max(2, Math.min(200, Number(appSettings.historyMessages||64))); return messages.filter(m=>!m.pending && (m.role==='user'||m.role==='assistant') && textOfMessage(m)).slice(-n).map(m=>({role:m.role,text:textOfMessage(m)})); }
 
@@ -1759,7 +1759,7 @@ async function loadPdf(file){
     pdfjs.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.mjs';
     const bytes=await file.arrayBuffer(); pdfDoc=await pdfjs.getDocument({data:bytes}).promise; pdfPageCount=pdfDoc.numPages; pdfPage=1; await renderPdfPage();
     $('pdfCanvas').style.display='block'; $('pdfEmpty').style.display='none'; $('pdfActions').style.display='flex'; $('pdfBottom').style.display='flex'; pdfSending=true; $('pdfSendToggle').classList.add('active'); $('pdfSendToggle').textContent='PDF On';
-  } catch(e){ alert('PDF не загрузился: '+e.message); }
+  } catch(e){ alert('PDF failed to load: '+e.message); }
 }
 async function renderPdfPage(){ if(!pdfDoc) return; try{ pdfRenderTask?.cancel?.(); }catch{} const page=await pdfDoc.getPage(pdfPage); const viewport=page.getViewport({scale:1.45}); const c=$('pdfCanvas'); c.width=viewport.width; c.height=viewport.height; const ctx=c.getContext('2d'); pdfRenderTask=page.render({canvasContext:ctx,viewport}); await pdfRenderTask.promise.catch(()=>{}); $('pdfPageLabel').textContent=`${pdfPage}/${pdfPageCount}`; }
 function changePdfPage(d){ if(!pdfDoc) return; pdfPage=Math.max(1,Math.min(pdfPageCount,pdfPage+d)); renderPdfPage(); }
@@ -1838,7 +1838,7 @@ function replayAssistantMessage(id){
 function continueAssistantMessage(id){
   const idx = messages.findIndex(m=>m.id===id); if(idx<0) return;
   const hist = buildHistoryUntilIndex(idx+1);
-  sendPayload({text:'Продолжи предыдущий ответ с того места, где остановился. Не повторяй начало.', historyOverride: hist, suppressUserEcho:true});
+  sendPayload({text:'Continue the previous answer from where it stopped. Do not repeat the beginning.', historyOverride: hist, suppressUserEcho:true});
 }
 function regenerateAssistantMessage(id){
   const idx = messages.findIndex(m=>m.id===id); if(idx<0) return;
@@ -1912,7 +1912,7 @@ renderMessages = function(){
 addMessage = function(role, text, meta='', pending=false){ const m={id:nowId(),role,text,meta,pending,audioChunks:[],audioSampleRate:0}; messages.push(m); renderMessages(); return m.id; };
 updateMessage = function(id, patch){ const m=messages.find(x=>x.id===id); if(m){ Object.assign(m,patch); renderMessages(); } };
 deleteMessage = function(id){ messages = messages.filter(m => m.id !== id); renderMessages(); };
-editMessage = function(id){ const m=messages.find(x=>x.id===id); if(!m) return; const next = prompt('Редактировать сообщение:', m.text || ''); if(next!==null){ m.text = next; m.pending=false; renderMessages(); } };
+editMessage = function(id){ const m=messages.find(x=>x.id===id); if(!m) return; const next = prompt('Edit message:', m.text || ''); if(next!==null){ m.text = next; m.pending=false; renderMessages(); } };
 historyForServer = function(){ const n=Math.max(2, Math.min(200, Number(appSettings.historyMessages||64))); return messages.filter(m=>!m.pending && (m.role==='user'||m.role==='assistant') && textOfMessage(m)).slice(-n).map(m=>({role:m.role,text:textOfMessage(m)})); };
 $('messages').onclick = (e)=>{ const btn=e.target.closest('button'); if(!btn) return; const id=Number(e.target.closest('.msg')?.dataset.id); if(!id) return; if(btn.classList.contains('del')) deleteMessage(id); else if(btn.classList.contains('edit')) editMessage(id); else if(btn.classList.contains('replay')) replayAssistantMessage(id); else if(btn.classList.contains('cont')) continueAssistantMessage(id); else if(btn.classList.contains('regen')) regenerateAssistantMessage(id); };
 
@@ -1991,7 +1991,7 @@ sendPayload = function({text='', audio=null, transcript='', historyOverride=null
     } else if(attachRawAudio) {
       addMessage('user','', used ? `voice/${micMode} · ${used}` : `voice/${micMode}`, true);
     } else if(frames.length || images.length) {
-      addMessage('user','посмотри вложения', used ? `with ${used}` : 'with image');
+      addMessage('user','look at the attachments', used ? `with ${used}` : 'with image');
     }
   }
 
@@ -2031,7 +2031,7 @@ sendPayload = function({text='', audio=null, transcript='', historyOverride=null
     audio_seconds: audioSeconds,
     frames,
     images,
-    lang:'ru',
+    lang:'en',
     voice: appSettings.voice || '',
     system_prompt:$('systemPrompt').value || '',
     history: hist,
@@ -2053,9 +2053,9 @@ sendPayload = function({text='', audio=null, transcript='', historyOverride=null
 $('chatsBtn')?.addEventListener('click', openChats);
 $('closeChatsBtn')?.addEventListener('click', closeChats);
 $('drawerBackdrop')?.addEventListener('click', closeChats);
-$('newChatBtn')?.addEventListener('click', ()=>{ const c=createChatRecord('Новый чат'); activeChatId=c.id; localStorage.setItem(ACTIVE_CHAT_KEY, activeChatId); loadActiveChat(); closeChats(); });
-$('renameChatBtn')?.addEventListener('click', ()=>{ const c=currentChat(); const name=prompt('Название чата:', c.title||''); if(name!==null && name.trim()){ c.title=name.trim(); c.updatedAt=Date.now(); persistChats(); renderChatList(); } });
-$('deleteChatBtn')?.addEventListener('click', ()=>{ if(chats.length<=1){ messages=[]; currentChat().messages=[]; renderMessages(); return; } const c=currentChat(); if(confirm(`Удалить чат «${c.title||'Новый чат'}»?`)){ chats=chats.filter(x=>x.id!==activeChatId); activeChatId=chats[0].id; localStorage.setItem(ACTIVE_CHAT_KEY, activeChatId); persistChats(); loadActiveChat(); closeChats(); } });
+$('newChatBtn')?.addEventListener('click', ()=>{ const c=createChatRecord('New chat'); activeChatId=c.id; localStorage.setItem(ACTIVE_CHAT_KEY, activeChatId); loadActiveChat(); closeChats(); });
+$('renameChatBtn')?.addEventListener('click', ()=>{ const c=currentChat(); const name=prompt('Chat name:', c.title||''); if(name!==null && name.trim()){ c.title=name.trim(); c.updatedAt=Date.now(); persistChats(); renderChatList(); } });
+$('deleteChatBtn')?.addEventListener('click', ()=>{ if(chats.length<=1){ messages=[]; currentChat().messages=[]; renderMessages(); return; } const c=currentChat(); if(confirm(`Delete chat "${c.title||'New chat'}"?`)){ chats=chats.filter(x=>x.id!==activeChatId); activeChatId=chats[0].id; localStorage.setItem(ACTIVE_CHAT_KEY, activeChatId); persistChats(); loadActiveChat(); closeChats(); } });
 $('settingsBtn')?.addEventListener('click', openSettings);
 $('closeSettingsBtn')?.addEventListener('click', closeSettings);
 $('settingsBackdrop')?.addEventListener('click', closeSettings);
