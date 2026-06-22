@@ -305,7 +305,9 @@ This project is licensed under Apache License 2.0.
 
 See:
 
-LICENSE
+ ```text 
+ LICENSE
+```
 
 The original Parlor project is also licensed under Apache License 2.0.
 
