@@ -49,7 +49,9 @@ models/supertonic3/
 
 ### 1. Install Python
 
-Use Python `3.11` or `3.12`.
+Recommended: Python 3.11 or 3.12.
+
+Python 3.13 is not recommended yet because some audio/TTS/native dependencies may not have stable wheels for it.
 
 ### 2. Install dependencies
 
