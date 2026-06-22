@@ -55,10 +55,27 @@ Python 3.13 is not recommended yet because some audio/TTS/native dependencies ma
 
 ### 2. Install dependencies
 
+Recommended:
+
+```bat
+install_menu.bat
+```
+
+Use the menu:
+
+[1] Install base app dependencies
+[2] Install PyTorch CPU for Silero RU
+[3] Full install: base deps + PyTorch CPU
+[4] Check environment
+[5] Reset .venv
+[6] Create folders
+[0] Exit
+
+Fast path:
+
 ```bat
 install_requirements.bat
 ```
-
 ### 3. Add llama.cpp server
 
 Put `llama-server.exe` into the project folder.
