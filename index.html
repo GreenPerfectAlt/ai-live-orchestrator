@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Parlor Jarvis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --c-bg: #050509;
+    --c-surface: rgba(255,255,255,0.045);
+    --c-surface-2: rgba(255,255,255,0.07);
+    --c-surface-hover: rgba(255,255,255,0.10);
+    --c-border: rgba(255,255,255,0.095);
+    --c-text: #c8cad0;
+    --c-text-dim: #737680;
+    --c-text-bright: #f2f4f8;
+    --c-listen: #4ade80;
+    --c-listen-dim: rgba(74,222,128,0.13);
+    --c-process: #f59e0b;
+    --c-process-dim: rgba(245,158,11,0.13);
+    --c-speak: #818cf8;
+    --c-speak-dim: rgba(129,140,248,0.13);
+    --c-danger: #fb7185;
+    --c-danger-dim: rgba(251,113,133,.14);
+    --c-loading: #3a3d46;
+    --c-loading-dim: rgba(58,61,70,0.14);
+    --glow: var(--c-loading);
+    --glow-dim: var(--c-loading-dim);
+    --font-body: 'Instrument Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--c-bg);
+    color: var(--c-text);
+    font-family: var(--font-body);
+    overflow: hidden;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    top: 5%; left: 50%; transform: translateX(-50%);
+    width: 900px; height: 620px;
+    background: radial-gradient(ellipse, var(--glow-dim), transparent 72%);
+    pointer-events: none;
+    opacity: .78;
+    transition: background .5s ease;
+  }
+  .app { height: 100vh; display: flex; flex-direction: column; position: relative; z-index: 1; }
+  .navbar {
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 12px 20px;
+    background: rgba(5,5,9,.72); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--c-border);
+    flex-shrink: 0;
+  }
+  .nav-left, .nav-center, .nav-right { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .logo { display: flex; align-items: center; gap: 10px; color: var(--c-text-bright); }
+  .logo-mark { width: 28px; height: 28px; border-radius: 9px; background: linear-gradient(135deg,var(--glow),transparent); box-shadow: 0 0 22px var(--glow-dim); }
+  .logo h1 { font-size: 20px; font-weight: 650; letter-spacing: .01em; }
+  .badge, .status-pill, .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--c-border); background: var(--c-surface);
+    color: var(--c-text-dim); border-radius: 999px;
+    padding: 5px 10px; font-size: 10px; font-weight: 700;
+    letter-spacing: .07em; text-transform: uppercase; white-space: nowrap;
+  }
+  .model-label { max-width: 410px; overflow: hidden; text-overflow: ellipsis; }
+  .status-pill::before { content:""; width: 6px; height: 6px; border-radius: 50%; background: var(--c-text-dim); }
+  .status-pill.connected { color: var(--c-listen); background: var(--c-listen-dim); }
+  .status-pill.connected::before { background: var(--c-listen); }
+  .status-pill.processing { color: var(--c-process); background: var(--c-process-dim); }
+  .status-pill.processing::before { background: var(--c-process); }
+  .status-pill.disconnected { color: var(--c-danger); background: var(--c-danger-dim); }
+  .status-pill.disconnected::before { background: var(--c-danger); }
+  .btn {
+    border: 1px solid var(--c-border); background: var(--c-surface); color: var(--c-text);
+    border-radius: 11px; padding: 8px 12px; font: inherit; font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: .16s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn:hover { background: var(--c-surface-hover); color: var(--c-text-bright); }
+  .btn.active { background: var(--c-listen-dim); border-color: rgba(74,222,128,.22); color: var(--c-listen); }
+  .btn.danger { color: var(--c-danger); }
+  .btn.icon { width: 32px; height: 32px; padding: 0; border-radius: 10px; }
+  .main {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(220px, .46fr) minmax(420px, 1fr) minmax(300px, .62fr);
+    gap: 12px;
+    padding: 16px 20px 20px;
+  }
+  .chat-column {
+    min-height: 0; display: flex; flex-direction: column; overflow: hidden;
+    background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 18px;
+  }
+  .system-strip { padding: 12px 14px; border-bottom: 1px solid var(--c-border); background: rgba(255,255,255,.025); display:flex; gap:10px; align-items:center; }
+  .system-strip input { flex: 1; min-width: 0; border: 1px solid transparent; background: transparent; color: var(--c-text); outline: none; font: inherit; font-size: 12.5px; }
+  .transcript { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.12) transparent; }
+  .transcript-inner { display: flex; flex-direction: column; gap: 10px; }
+  .msg {
+    position: relative; max-width: 86%; padding: 10px 14px; border-radius: 14px;
+    font-size: 13.5px; line-height: 1.55; word-break: break-word; animation: msg-in .18s ease-out;
+  }
+  @keyframes msg-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+  .msg.user { align-self: flex-end; background: rgba(74,222,128,.085); color: #b7e2c7; border-bottom-right-radius: 5px; }
+  .msg.assistant { align-self: flex-start; background: rgba(255,255,255,.055); color: var(--c-text); border-bottom-left-radius: 5px; }
+  .msg.pending { color: var(--c-text-dim); }
+  .msg .meta { margin-top: 5px; font-size: 10.5px; color: var(--c-text-dim); letter-spacing: .02em; }
+  .msg-actions { position: absolute; top: -9px; right: 8px; opacity: 0; pointer-events: none; display:flex; gap:4px; transition:.12s ease; }
+  .msg.assistant .msg-actions { right: auto; left: 8px; }
+  .msg:hover .msg-actions { opacity: 1; pointer-events: auto; }
+  .msg-action { width: 22px; height: 22px; border-radius: 999px; border: 1px solid var(--c-border); background: rgba(10,10,16,.9); color: var(--c-text-dim); cursor:pointer; font-size:12px; }
+  .msg-action:hover { color: var(--c-text-bright); background: rgba(255,255,255,.11); }
+  .msg-action:disabled { opacity:.42; cursor:default; }
+  .loading-dots { display:inline-flex; gap:4px; height:1em; align-items:center; }
+  .loading-dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--c-listen); opacity:.45; animation: dot 1.1s infinite; }
+  .loading-dots span:nth-child(2){ animation-delay:.15s; } .loading-dots span:nth-child(3){ animation-delay:.3s; }
+  @keyframes dot { 0%,70%,100%{transform:translateY(0);opacity:.35} 35%{transform:translateY(-4px);opacity:1} }
+  .chat-footer { display:flex; gap: 10px; align-items:center; padding: 10px 14px; border-top: 1px solid var(--c-border); background: rgba(255,255,255,.025); }
+  .state { display:flex; align-items:center; gap: 8px; min-width: 150px; color: var(--c-text-dim); font-size:12.5px; font-weight:600; }
+  .state-dot { width:8px; height:8px; border-radius:50%; background: var(--glow); box-shadow:0 0 8px var(--glow-dim); animation:pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1; transform:scale(1)} 50%{opacity:.45; transform:scale(.82)} }
+  .wave { width: 92px; height: 22px; }
+  .input-wrap { flex: 1; min-width:0; display:flex; gap: 8px; align-items:center; background: rgba(0,0,0,.2); border:1px solid var(--c-border); border-radius: 14px; padding: 6px 6px 6px 12px; }
+  #textInput { flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--c-text-bright); font: inherit; font-size: 13.5px; }
+  #micBtn { pointer-events:auto; user-select:none; touch-action:none; flex-shrink:0; min-width:46px; min-height:38px; position:relative; z-index:50; cursor:pointer; }
+  .mic-btn.recording { color: #fff; background: rgba(251,113,133,.28); border-color: rgba(251,113,133,.55); box-shadow: 0 0 18px rgba(251,113,133,.28); transform:scale(.96); }
+  .split-divider { display:none; }
+  .side-column { display:grid; gap:12px; min-height:0; }
+  .left-sources { grid-template-rows: minmax(280px, 1.45fr) minmax(160px, .72fr); }
+  .right-sources { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(320px, 1.7fr) minmax(170px, .78fr); }
+  .right-sources #screenTile { grid-column: 1 / -1; }
+  .right-sources #videoTile { grid-column: 1; }
+  .right-sources #pdfTile { grid-column: 2; }
+  .tile { position:relative; min-height:0; overflow:hidden; border-radius:16px; background:#0a0a10; border:1px solid var(--c-border); box-shadow: 0 0 0 1px rgba(255,255,255,.02); }
+  .tile.listening { box-shadow: 0 0 0 1px rgba(74,222,128,.26), 0 0 28px var(--c-listen-dim); }
+  .tile.processing { box-shadow: 0 0 0 1px rgba(245,158,11,.30), 0 0 28px var(--c-process-dim); }
+  .tile.speaking { box-shadow: 0 0 0 1px rgba(129,140,248,.32), 0 0 34px var(--c-speak-dim); }
+  .tile video, .tile canvas, .tile img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#0a0a10; }
+  .tile video.screen, .tile video.uploaded, .tile img.uploaded { object-fit: contain; }
+  .tile video.mirror { transform: scaleX(-1); }
+  .tile canvas.pdf { object-fit: contain; background:#fff; }
+  .tile-label, .tile-actions, .tile-bottom { position:absolute; z-index:5; }
+  .tile-label { left:9px; top:9px; display:flex; gap:6px; align-items:center; padding:4px 8px; border-radius:999px; background:rgba(10,10,16,.64); backdrop-filter: blur(8px); color:#eef0f4; font-size:10px; text-transform:uppercase; font-weight:800; letter-spacing:.05em; }
+  .tile-actions { right:9px; top:9px; display:flex; gap:5px; }
+  .tile-bottom { left:50%; bottom:10px; transform:translateX(-50%); max-width:calc(100% - 18px); display:flex; align-items:center; gap:6px; padding:5px 8px; border-radius:999px; background:rgba(10,10,16,.74); color:#eef0f4; font-size:11px; backdrop-filter: blur(8px); }
+  .tile-empty { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:14px; background:repeating-linear-gradient(-45deg, rgba(255,255,255,.018) 0 12px, transparent 12px 24px); color:var(--c-text-dim); font-size:12px; text-align:center; }
+  .file-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:220px; }
+  .tiny { font-size: 10px; padding: 5px 8px; border-radius: 999px; }
+
+  .nav-tools { display:flex; align-items:center; gap:8px; }
+  .drawer-backdrop, .modal-backdrop {
+    position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,.46);
+    opacity: 0; pointer-events: none; transition: .18s ease;
+  }
+  .drawer-backdrop.open, .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+  .chat-drawer {
+    position: fixed; z-index: 100; left: 0; top: 0; bottom: 0; width: 310px;
+    background: rgba(12,12,18,.96); border-right: 1px solid var(--c-border);
+    backdrop-filter: blur(18px); transform: translateX(-104%); transition: .2s ease;
+    display:flex; flex-direction:column; box-shadow: 24px 0 70px rgba(0,0,0,.42);
+  }
+  .chat-drawer.open { transform: translateX(0); }
+  .drawer-head, .modal-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px; border-bottom:1px solid var(--c-border); }
+  .drawer-title, .modal-title { font-size:13px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--c-text-bright); }
+  .drawer-actions { display:flex; gap:8px; padding:12px 14px; border-bottom:1px solid var(--c-border); }
+  .chat-list { flex:1; min-height:0; overflow:auto; padding:10px; display:flex; flex-direction:column; gap:8px; }
+  .chat-item { border:1px solid var(--c-border); background:rgba(255,255,255,.035); color:var(--c-text); border-radius:13px; padding:10px; cursor:pointer; display:grid; gap:3px; text-align:left; }
+  .chat-item:hover { background:rgba(255,255,255,.065); }
+  .chat-item.active { border-color:rgba(74,222,128,.34); background:rgba(74,222,128,.08); }
+  .chat-item-title { font-size:13px; font-weight:800; color:var(--c-text-bright); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .chat-item-meta { font-size:10.5px; color:var(--c-text-dim); }
+  .modal-card {
+    position: fixed; z-index: 101; left:50%; top:50%; transform: translate(-50%,-48%) scale(.98);
+    width:min(680px, calc(100vw - 32px)); max-height:calc(100vh - 48px); overflow:hidden;
+    background: rgba(14,14,21,.97); border:1px solid var(--c-border); border-radius:18px;
+    box-shadow:0 30px 90px rgba(0,0,0,.55); opacity:0; pointer-events:none; transition:.18s ease;
+  }
+  .modal-card.open { opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+  .modal-body { padding:14px; overflow:auto; max-height:calc(100vh - 150px); display:grid; gap:14px; }
+  .settings-grid { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:12px; }
+  .settings-field { display:grid; gap:6px; }
+  .settings-field.wide { grid-column:1 / -1; }
+  .settings-field label { font-size:11px; color:var(--c-text-dim); font-weight:800; letter-spacing:.05em; text-transform:uppercase; }
+  .settings-field input, .settings-field select {
+    width:100%; border:1px solid var(--c-border); background:rgba(0,0,0,.24); color:var(--c-text-bright);
+    border-radius:12px; padding:9px 10px; font:inherit; font-size:13px; outline:none;
+  }
+  .settings-field input:focus { border-color:rgba(74,222,128,.35); }
+  .settings-help { color:var(--c-text-dim); font-size:11.5px; line-height:1.45; }
+  .modal-footer { display:flex; justify-content:space-between; gap:10px; padding:14px; border-top:1px solid var(--c-border); }
+  .modal-footer > div { display:flex; gap:8px; }
+  @media (max-width: 700px) { .settings-grid { grid-template-columns:1fr; } .nav-tools .btn:not(.icon) { font-size:0; width:32px; padding:0; } }
+
+  .btn.live-on { color:#4ade80; border-color:rgba(74,222,128,.35); background:rgba(74,222,128,.12); box-shadow:0 0 16px rgba(74,222,128,.12); }
+  .live-label { position:absolute; left:14px; bottom:14px; z-index:4; font-size:10px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:rgba(238,240,244,.68); background:rgba(0,0,0,.42); border:1px solid rgba(255,255,255,.08); border-radius:999px; padding:6px 9px; backdrop-filter:blur(10px); display:none; }
+  .live-label.on { display:block; color:#4ade80; border-color:rgba(74,222,128,.25); }
+  .live-label::before { content:''; display:inline-block; width:6px; height:6px; border-radius:50%; background:currentColor; margin-right:6px; box-shadow:0 0 8px currentColor; }
+
+  @media (max-width: 980px) {
+    body { overflow:auto; }
+    .app { min-height: 100vh; height: auto; }
+    .main { grid-template-columns:1fr!important; grid-auto-rows:auto; overflow:auto; }
+    .left-sources, .right-sources { grid-template-columns:1fr; grid-template-rows:none; }
+    .right-sources #screenTile, .right-sources #videoTile, .right-sources #pdfTile { grid-column:auto; }
+    .side-column .tile { min-height: 260px; }
+    .chat-column { min-height: 540px; }
+    .nav-center { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="navbar">
+    <div class="nav-left">
+      <div class="logo"><div class="logo-mark"></div><h1>Parlor</h1><span class="badge">Jarvis</span></div>
+    </div>
+    <div class="nav-center">
+      <span id="modelLabel" class="badge model-label">model: loading</span>
+      <span id="launcherLabel" class="badge model-label">bat: unknown</span>
+    </div>
+    <div class="nav-right nav-tools">
+      <button id="chatsBtn" class="btn tiny" title="Чаты">💬 chats</button>
+      <button id="settingsBtn" class="btn tiny" title="Настройки">⚙ settings</button>
+      <span id="status" class="status-pill disconnected">Disconnected</span>
+      <button id="resetBtn" class="btn tiny" title="Сбросить текущий чат">↺ reset</button>
+    </div>
+  </nav>
+
+  
+  <div id="drawerBackdrop" class="drawer-backdrop"></div>
+  <aside id="chatDrawer" class="chat-drawer" aria-label="Chats">
+    <div class="drawer-head"><div class="drawer-title">Chats</div><button id="closeChatsBtn" class="btn icon">×</button></div>
+    <div class="drawer-actions">
+      <button id="newChatBtn" class="btn">+ new</button>
+      <button id="renameChatBtn" class="btn">rename</button>
+      <button id="deleteChatBtn" class="btn danger">delete</button>
+    </div>
+    <div id="chatList" class="chat-list"></div>
+  </aside>
+
+  <div id="settingsBackdrop" class="modal-backdrop"></div>
+  <section id="settingsModal" class="modal-card" aria-label="Settings">
+    <div class="modal-head"><div class="modal-title">Settings</div><button id="closeSettingsBtn" class="btn icon">×</button></div>
+    <div class="modal-body">
+      <div class="settings-grid">
+        <div class="settings-field wide">
+          <label for="settingsWs">WebSocket URL</label>
+          <input id="settingsWs" spellcheck="false" />
+          <div class="settings-help">Оставь пустым для текущего адреса: ws://127.0.0.1:8000/ws. Менять нужно только если фронт и backend на разных адресах.</div>
+        </div>
+        <div class="settings-field">
+          <label for="settingsTtsEngine">TTS engine</label>
+          <select id="settingsTtsEngine">
+            <option value="supertonic">Supertonic 3 / quality</option>
+            <option value="silero">Silero RU / fast live</option>
+          </select>
+          <div class="settings-help">Supertonic 3 = красивее, но медленнее. Silero RU = быстрее и проще, лучше для live. Если Silero не установлен, bat поставит PyTorch CPU.</div>
+        </div>
+        <div class="settings-field">
+          <label for="settingsVoice">Supertonic voice</label>
+          <input id="settingsVoice" placeholder="F3 / F4 / backend default" />
+        </div>
+        <div class="settings-field">
+          <label for="settingsSileroSpeaker">Silero voice</label>
+          <select id="settingsSileroSpeaker">
+            <option value="baya">baya / female</option>
+            <option value="xenia">xenia / female</option>
+            <option value="kseniya">kseniya / female</option>
+            <option value="aidar">aidar / male</option>
+            <option value="eugene">eugene / male</option>
+            <option value="random">random</option>
+          </select>
+          <div class="settings-help">Работает только если TTS engine = Silero RU.</div>
+        </div>
+        <div class="settings-field">
+          <label for="settingsSileroSpeed">Silero speed</label>
+          <input id="settingsSileroSpeed" type="number" min="0.85" max="1.2" step="0.02" />
+        </div>
+
+        <div class="settings-field">
+          <label for="settingsBrowserStt">Mic speech recognition</label>
+          <select id="settingsBrowserStt"><option value="1">On</option><option value="0">Off</option></select>
+          <div class="settings-help">Это НЕ озвучка и НЕ робоголос. Chrome только распознаёт твой микрофон в текст для Auto Mic.</div>
+        </div>
+        <div class="settings-field">
+          <label for="settingsSendRawAudio">Gemma mic input mode</label>
+          <select id="settingsSendRawAudio">
+            <option value="stt">STT text — быстро</option>
+            <option value="native">Native audio — WAV в Gemma</option>
+            <option value="hybrid">Hybrid — STT + WAV</option>
+          </select>
+          <div class="settings-help">Только способ отправки микрофона в Gemma. Голоса/TTS не трогались.</div>
+        </div>
+        <div class="settings-field">
+          <label for="settingsSttLang">STT lang</label>
+          <input id="settingsSttLang" placeholder="ru-RU" />
+        </div>
+        <div class="settings-field">
+          <label for="settingsMaxTokens">Max output tokens (-1/0 = unlimited)</label>
+          <input id="settingsMaxTokens" type="number" min="-1" max="32768" step="64" />
+        </div>
+        <div class="settings-field"><label for="settingsTemp">Temperature</label><input id="settingsTemp" type="number" min="0" max="2" step="0.05" /></div>
+        <div class="settings-field"><label for="settingsTopP">Top P</label><input id="settingsTopP" type="number" min="0" max="1" step="0.01" /></div>
+        <div class="settings-field"><label for="settingsTopK">Top K</label><input id="settingsTopK" type="number" min="0" max="256" step="1" /></div>
+        <div class="settings-field"><label for="settingsHistoryTurns">History messages</label><input id="settingsHistoryTurns" type="number" min="2" max="200" step="2" /></div>
+        <div class="settings-field"><label for="settingsCameraMax">Camera max width</label><input id="settingsCameraMax" type="number" min="224" max="1024" step="32" /></div>
+        <div class="settings-field"><label for="settingsAttachCameraAlways">Send camera every turn</label><select id="settingsAttachCameraAlways"><option value="0">Off / only when asked</option><option value="1">On / old camera mode</option></select></div>
+        <div class="settings-field"><label for="settingsVisionMode">Vision send mode</label><select id="settingsVisionMode"><option value="auto">Auto / only when asked</option><option value="always">Always / AI Studio live</option><option value="off">Off / fastest chat</option></select><div class="settings-help">Auto быстрее: screen/camera/images уходят только если вопрос явно про визуал. Always медленнее, но ближе к Live.</div></div>
+        <div class="settings-field"><label for="settingsScreenMax">Screen max width</label><input id="settingsScreenMax" type="number" min="224" max="1024" step="32" /></div>
+        <div class="settings-field"><label for="settingsPdfMax">PDF max width</label><input id="settingsPdfMax" type="number" min="224" max="1024" step="32" /></div>
+        <div class="settings-field"><label for="settingsVideoMax">Video max width</label><input id="settingsVideoMax" type="number" min="224" max="1024" step="32" /></div>
+        <div class="settings-field"><label for="settingsImageMax">Image max width</label><input id="settingsImageMax" type="number" min="224" max="1536" step="32" /></div>
+        <div class="settings-field"><label for="settingsLiveFps">Live capture FPS</label><input id="settingsLiveFps" type="number" min="0.2" max="8" step="0.2" /></div>
+        <div class="settings-field"><label for="settingsLiveFrames">Live frames to send</label><input id="settingsLiveFrames" type="number" min="1" max="24" step="1" /></div>
+        <div class="settings-field"><label for="settingsAutoVoice">Auto mic</label><select id="settingsAutoVoice"><option value="0">Off</option><option value="1">On</option></select></div>
+        <div class="settings-field"><label for="settingsStartAutoWithScreen">Auto mic after Share screen</label><select id="settingsStartAutoWithScreen"><option value="1">On</option><option value="0">Off</option></select></div>
+        <div class="settings-field"><label for="settingsVoiceThreshold">Voice threshold</label><input id="settingsVoiceThreshold" type="number" min="0.002" max="0.2" step="0.002" /></div>
+        <div class="settings-field"><label for="settingsSilenceMs">Silence stop ms</label><input id="settingsSilenceMs" type="number" min="300" max="3000" step="50" /></div>
+        <div class="settings-field"><label for="settingsMinSpeechMs">Min speech ms</label><input id="settingsMinSpeechMs" type="number" min="250" max="2000" step="50" /></div>
+        <div class="settings-field"><label for="settingsBargeIn">Interrupt while assistant speaks</label><select id="settingsBargeIn"><option value="1">On</option><option value="0">Off</option></select><div class="settings-help">Если ассистент затыкается сам от своего голоса — выключи или повысь sensitivity.</div></div>
+        <div class="settings-field"><label for="settingsBargeInSensitivity">Barge-in sensitivity</label><input id="settingsBargeInSensitivity" type="number" min="1.0" max="3.0" step="0.05" /><div class="settings-help">Больше = труднее перебить, меньше = быстрее перебивает.</div></div>
+      </div>
+      <div class="settings-help">
+        Live capture пишет экран/камеру/видео в кольцевой буфер. В режиме Auto кадры отправляются только когда вопрос про визуал — это намного быстрее. Для постоянного AI Studio-like поведения поставь Vision send mode = Always.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="resetSettingsBtn" class="btn danger">reset settings</button>
+      <div><button id="cancelSettingsBtn" class="btn">cancel</button><button id="saveSettingsBtn" class="btn active">save</button></div>
+    </div>
+  </section>
+
+  <main id="main" class="main">
+    <section class="side-column left-sources">
+      <div id="cameraTile" class="tile loading">
+        <div class="tile-label">📷 Camera</div>
+        <video id="cameraVideo" class="mirror" autoplay muted playsinline></video>
+        <div id="cameraLiveLabel" class="live-label">live buffer</div>
+        <div class="tile-actions"><button id="cameraToggle" class="btn tiny active">Camera On</button></div>
+      </div>
+
+      <div id="imageTile" class="tile loading">
+        <div class="tile-label">🖼 Images</div>
+        <img id="imagePreview" class="uploaded" alt="uploaded image" style="display:none" />
+        <div id="imageLiveLabel" class="live-label">image</div>
+        <div id="imageEmpty" class="tile-empty"><b>Images</b><button id="imageUploadBtn" class="btn">Upload images</button></div>
+        <div id="imageActions" class="tile-actions" style="display:none"><button id="imageSendToggle" class="btn tiny active">Images On</button></div>
+        <div id="imageBottom" class="tile-bottom" style="display:none"><span id="imageFileName" class="file-name"></span><button id="imageReplaceBtn" class="btn tiny">replace</button><button id="imageRemoveBtn" class="btn tiny danger">×</button></div>
+      </div>
+    </section>
+
+    <section class="chat-column">
+      <div class="system-strip">
+        <span class="badge">system</span>
+        <input id="systemPrompt" placeholder="Системный промпт, можно оставить пустым" />
+      </div>
+      <div id="transcript" class="transcript"><div id="messages" class="transcript-inner"></div></div>
+      <div class="chat-footer">
+        <div class="state"><span id="stateDot" class="state-dot"></span><span id="stateText">Loading...</span><canvas id="waveform" class="wave"></canvas></div>
+        <div class="input-wrap">
+          <input id="textInput" autocomplete="off" placeholder="Напиши сообщение или зажми микрофон..." />
+          <button id="autoMicBtn" class="btn tiny" title="Голосовая активация без зажатия">Auto Mic</button>
+          <button id="micBtn" class="btn icon mic-btn" title="Зажать и говорить">🎙</button>
+          <button id="sendBtn" class="btn icon" title="Отправить">➤</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="side-column right-sources">
+      <div id="screenTile" class="tile loading">
+        <div class="tile-label">🖥 Screen</div>
+        <video id="screenVideo" class="screen" autoplay muted playsinline style="display:none"></video>
+        <div id="screenLiveLabel" class="live-label">screen live</div>
+        <div id="screenEmpty" class="tile-empty"><b>Screen</b><button id="screenShareBtn" class="btn">Share screen</button></div>
+        <div id="screenActions" class="tile-actions" style="display:none"><button id="screenSendToggle" class="btn tiny active">Screen On</button><button id="screenAutoMicBtn" class="btn tiny">Auto Mic</button></div>
+        <div id="screenBottom" class="tile-bottom" style="display:none"><button id="screenReplaceBtn" class="btn tiny">replace</button><button id="screenRemoveBtn" class="btn tiny danger">×</button></div>
+      </div>
+
+      <div id="videoTile" class="tile loading">
+        <div class="tile-label">🎞 Video</div>
+        <video id="fileVideo" class="uploaded" controls playsinline style="display:none"></video>
+        <div id="videoLiveLabel" class="live-label">video live</div>
+        <div id="videoEmpty" class="tile-empty"><b>Video</b><button id="videoUploadBtn" class="btn">Upload video</button></div>
+        <div id="videoActions" class="tile-actions" style="display:none"><button id="videoSendToggle" class="btn tiny active">Video On</button></div>
+        <div id="videoBottom" class="tile-bottom" style="display:none"><span id="videoFileName" class="file-name"></span><button id="videoReplaceBtn" class="btn tiny">replace</button><button id="videoRemoveBtn" class="btn tiny danger">×</button></div>
+      </div>
+
+      <div id="pdfTile" class="tile loading">
+        <div class="tile-label">📄 PDF</div>
+        <canvas id="pdfCanvas" class="pdf" style="display:none"></canvas>
+        <div id="pdfLiveLabel" class="live-label">pdf current</div>
+        <div id="pdfEmpty" class="tile-empty"><b>PDF</b><button id="pdfUploadBtn" class="btn">Upload PDF</button></div>
+        <div id="pdfActions" class="tile-actions" style="display:none"><button id="pdfSendToggle" class="btn tiny active">PDF On</button></div>
+        <div id="pdfBottom" class="tile-bottom" style="display:none"><button id="pdfPrevBtn" class="btn tiny">‹</button><span id="pdfPageLabel">1/1</span><button id="pdfNextBtn" class="btn tiny">›</button><button id="pdfReplaceBtn" class="btn tiny">replace</button><button id="pdfRemoveBtn" class="btn tiny danger">×</button></div>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const stateColors = {
+  loading: ['#3a3d46','rgba(58,61,70,0.14)','Loading...'],
+  listening: ['#4ade80','rgba(74,222,128,0.13)','Listening'],
+  processing: ['#f59e0b','rgba(245,158,11,0.13)','Thinking...'],
+  speaking: ['#818cf8','rgba(129,140,248,0.13)','Speaking'],
+  recording: ['#fb7185','rgba(251,113,133,0.14)','Recording...']
+};
+let ws, state = 'loading', mediaStream = null, screenStream = null, audioCtx = null, analyser = null;
+let cameraEnabled = true, screenSending = true, pdfSending = true, videoSending = true, imageSending = true;
+let pdfDoc = null, pdfPage = 1, pdfPageCount = 0, pdfRenderTask = null, videoObjectUrl = null;
+let uploadedImages = [], imageObjectUrls = [], currentImageIndex = 0;
+let messages = [], msgCounter = 0, activeAssistantId = null, activeRequestId = null;
+let streamSampleRate = 24000, streamNextTime = 0, streamSources = [];
+let recording = false, recSource = null, recProcessor = null, recZeroGain = null, recChunks = [], recSampleRate = 48000, recRawActive = false;
+let speechRec = null, speechTranscript = '', speechRunning = false;
+let currentAudioMessageId = null, currentAudioRequestId = null, replayTargets = new Map(), messageAudioCache = new Map(), ignoredAudioRequests = new Set(), ignoredTextRequests = new Set();
+let ttsPendingAudioChunks = [], ttsPlaybackStarted = false, ttsAudioEnded = false, ttsBufferTimer = null;
+let lastAssistantTextForEcho = '', ttsEchoActive = false;
+let browserTtsBuffer = '', browserTtsQueue = [], browserTtsSpeaking = false;
+let autoSuppressUntil = 0, lastAutoSttSent = '', lastAutoSttAt = 0;
+let autoSttDraft = '', autoSttLastAt = 0, autoSttTimer = null, autoSttRestartTimer = null, autoSttSending = false, autoSttSendingAt = 0;
+let autoMicWatchdogTimer = null, speechLastStartAt = 0, speechLastResultAt = 0, speechStarting = false;
+let autoSttOnlyMode = false;
+let micHoldActive = false, micPointerId = null, micStartedAt = 0, micFinalizing = false, micFinalizeTimer = null;
+let lastBargeCandidate = '', lastBargeCandidateAt = 0, bargeCandidateHits = 0;
+let autoMicEnabled = false, autoMonitoring = false, autoRecording = false, autoSource = null, autoProcessor = null, autoZeroGain = null, autoChunks = [], autoSampleRate = 48000, autoLastVoiceAt = 0, autoStartedAt = 0;
+let autoNoiseFloor = 0.004, autoHotFrames = 0, autoPreRoll = [];
+let speakingStartedAt = 0, lastBargeInterruptAt = 0;
+let liveFrameTimer = null, liveFrameSeq = 0;
+let liveFrameBuffers = {camera: [], screen: [], video: []};
+let splitDragging = false;
+
+const TAB_ID = `tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+const audioFocusChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('parlor-audio-focus') : null;
+function claimAudioFocus(requestId=''){
+  try{ audioFocusChannel?.postMessage({type:'takeover', tabId:TAB_ID, requestId:requestId || ''}); }catch{}
+  try{ localStorage.setItem('parlor.audio.owner', JSON.stringify({tabId:TAB_ID, requestId:requestId || '', at:Date.now()})); }catch{}
+}
+audioFocusChannel && (audioFocusChannel.onmessage = (ev)=>{
+  const d = ev.data || {};
+  if(d.type === 'takeover' && d.tabId && d.tabId !== TAB_ID){
+    stopPlayback({clearRequest:true});
+  }
+});
+window.addEventListener('storage', (ev)=>{
+  if(ev.key !== 'parlor.audio.owner' || !ev.newValue) return;
+  try{
+    const d = JSON.parse(ev.newValue);
+    if(d.tabId && d.tabId !== TAB_ID) stopPlayback({clearRequest:true});
+  }catch{}
+});
+
+
+
+// ── Persistent chats + settings ──
+const SETTINGS_KEY = 'parlor.jarvis.settings.v47';
+const CHATS_KEY = 'parlor.jarvis.chats.v7';
+const ACTIVE_CHAT_KEY = 'parlor.jarvis.activeChat.v7';
+const DEFAULT_SETTINGS = {
+  wsUrl: '', voice: '', temperature: 1.0, top_p: 1.0, top_k: 0,
+  max_output_tokens: 0, historyMessages: 20,
+  cameraMax: 384, screenMax: 384, pdfMax: 448, videoMax: 384, imageMax: 512,
+  liveFps: 1.0, liveFrames: 2, autoVoice: false, startAutoWithScreen: true, voiceThreshold: 0.04, silenceStopMs: 950, minSpeechMs: 550,
+  bargeIn: 1, bargeInGraceMs: 250, bargeInSensitivity: 1.35,
+  attachCameraAlways: 0, visionMode: 'auto',
+  browserStt: 1, sttLang: 'ru-RU', sendRawAudio: 0, audioInputMode: 'stt', ttsMode: 'server', browserTtsRate: 1.0,
+  ttsEngine: 'supertonic', sileroSpeaker: 'baya', sileroSpeed: 1.0,
+};
+let appSettings = loadSettings();
+let chats = loadChats();
+let activeChatId = localStorage.getItem(ACTIVE_CHAT_KEY) || (chats[0] && chats[0].id) || createChatRecord('Новый чат').id;
+let suppressChatSave = false;
+
+function clampNum(v, d, lo, hi){ v = Number(v); if(!Number.isFinite(v)) return d; return Math.max(lo, Math.min(hi, v)); }
+function loadSettings(){ try { return {...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')||{})}; } catch { return {...DEFAULT_SETTINGS}; } }
+function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings)); }
+function defaultWsUrl(){ return `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`; }
+function getActiveWsUrl(){ return (appSettings.wsUrl || '').trim() || defaultWsUrl(); }
+function createChatRecord(title){ const c={id:'chat-'+Date.now()+'-'+Math.random().toString(16).slice(2), title:title||'Новый чат', createdAt:Date.now(), updatedAt:Date.now(), systemPrompt:'', messages:[]}; chats.unshift(c); persistChats(); return c; }
+function loadChats(){ try { const arr=JSON.parse(localStorage.getItem(CHATS_KEY)||'[]'); if(Array.isArray(arr) && arr.length) return arr; } catch {} return [{id:'chat-default',title:'Новый чат',createdAt:Date.now(),updatedAt:Date.now(),systemPrompt:'',messages:[]}]; }
+function persistChats(){ localStorage.setItem(CHATS_KEY, JSON.stringify(chats.slice(0,60))); }
+function currentChat(){ let c=chats.find(x=>x.id===activeChatId); if(!c){ c=createChatRecord('Новый чат'); activeChatId=c.id; } return c; }
+function saveActiveChat(){ if(suppressChatSave) return; const c=currentChat(); c.messages = messages.filter(m=>!m.pending).map(m=>({id:m.id,role:m.role,text:m.text||'',meta:m.meta||''})); c.systemPrompt = $('systemPrompt')?.value || ''; c.updatedAt = Date.now(); persistChats(); renderChatList(); }
+function loadActiveChat(){ const c=currentChat(); suppressChatSave = true; messages = (c.messages||[]).map(m=>({...m,pending:false,id:nowId()})); if($('systemPrompt')) $('systemPrompt').value = c.systemPrompt || ''; renderMessages(); suppressChatSave = false; renderChatList(); }
+function maybeTitleChat(text){ const c=currentChat(); if(!c || (c.title && c.title !== 'Новый чат')) return; const t=String(text||'').trim().replace(/\s+/g,' ').slice(0,42); if(t){ c.title=t; persistChats(); renderChatList(); } }
+function renderChatList(){ const list=$('chatList'); if(!list) return; list.innerHTML=''; const sorted=[...chats].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)); for(const c of sorted){ const btn=document.createElement('button'); btn.className='chat-item'+(c.id===activeChatId?' active':''); btn.dataset.id=c.id; const count=(c.messages||[]).length; const date=new Date(c.updatedAt||Date.now()).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); btn.innerHTML=`<div class="chat-item-title">${escapeHtml(c.title||'Новый чат')}</div><div class="chat-item-meta">${count} msg · ${date}</div>`; btn.onclick=()=>{ activeChatId=c.id; localStorage.setItem(ACTIVE_CHAT_KEY, activeChatId); loadActiveChat(); closeChats(); }; list.appendChild(btn); } }
+function openChats(){ $('drawerBackdrop')?.classList.add('open'); $('chatDrawer')?.classList.add('open'); renderChatList(); }
+function closeChats(){ $('drawerBackdrop')?.classList.remove('open'); $('chatDrawer')?.classList.remove('open'); }
+function openSettings(){ fillSettingsForm(); $('settingsBackdrop')?.classList.add('open'); $('settingsModal')?.classList.add('open'); }
+function closeSettings(){ $('settingsBackdrop')?.classList.remove('open'); $('settingsModal')?.classList.remove('open'); }
+function fillSettingsForm(){
+  const map={settingsWs:'wsUrl',settingsVoice:'voice',settingsSttLang:'sttLang',settingsSileroSpeed:'sileroSpeed',settingsTemp:'temperature',settingsTopP:'top_p',settingsTopK:'top_k',settingsMaxTokens:'max_output_tokens',settingsHistoryTurns:'historyMessages',settingsCameraMax:'cameraMax',settingsScreenMax:'screenMax',settingsPdfMax:'pdfMax',settingsVideoMax:'videoMax',settingsImageMax:'imageMax',settingsLiveFps:'liveFps',settingsLiveFrames:'liveFrames',settingsVoiceThreshold:'voiceThreshold',settingsSilenceMs:'silenceStopMs',settingsMinSpeechMs:'minSpeechMs',settingsBargeInSensitivity:'bargeInSensitivity'};
+  for(const [id,k] of Object.entries(map)){ const el=$(id); if(el) el.value = appSettings[k] ?? ''; }
+  if($('settingsAutoVoice')) $('settingsAutoVoice').value = appSettings.autoVoice ? '1' : '0';
+  if($('settingsStartAutoWithScreen')) $('settingsStartAutoWithScreen').value = appSettings.startAutoWithScreen ? '1' : '0';
+  if($('settingsTtsEngine')) $('settingsTtsEngine').value = appSettings.ttsEngine || 'supertonic';
+  if($('settingsSileroSpeaker')) $('settingsSileroSpeaker').value = appSettings.sileroSpeaker || 'baya';
+  if($('settingsBrowserStt')) $('settingsBrowserStt').value = String(Number(appSettings.browserStt ?? 1));
+  if($('settingsSendRawAudio')){
+    const mode = appSettings.audioInputMode || (Number(appSettings.sendRawAudio || 0) ? 'native' : 'stt');
+    $('settingsSendRawAudio').value = ['stt','native','hybrid'].includes(mode) ? mode : 'stt';
+  }
+  if($('settingsAttachCameraAlways')) $('settingsAttachCameraAlways').value = String(Number(appSettings.attachCameraAlways ?? 0));
+  if($('settingsVisionMode')) $('settingsVisionMode').value = appSettings.visionMode || 'auto';
+  if($('settingsBargeIn')) $('settingsBargeIn').value = String(Number(appSettings.bargeIn ?? 1));
+}
+function readSettingsForm(){
+  appSettings.wsUrl = $('settingsWs')?.value.trim() || '';
+  appSettings.voice = $('settingsVoice')?.value.trim() || '';
+  appSettings.ttsEngine = $('settingsTtsEngine')?.value || 'supertonic';
+  appSettings.sileroSpeaker = $('settingsSileroSpeaker')?.value || 'baya';
+  appSettings.sileroSpeed = clampNum($('settingsSileroSpeed')?.value, DEFAULT_SETTINGS.sileroSpeed, 0.85, 1.2);
+  appSettings.sttLang = $('settingsSttLang')?.value.trim() || 'ru-RU';
+  appSettings.browserStt = Number($('settingsBrowserStt')?.value ?? 1);
+  appSettings.audioInputMode = $('settingsSendRawAudio')?.value || 'stt';
+  if(!['stt','native','hybrid'].includes(appSettings.audioInputMode)) appSettings.audioInputMode = 'stt';
+  appSettings.sendRawAudio = appSettings.audioInputMode === 'stt' ? 0 : 1;
+  appSettings.attachCameraAlways = Number($('settingsAttachCameraAlways')?.value ?? 0);
+  appSettings.visionMode = $('settingsVisionMode')?.value || 'auto';
+  appSettings.temperature = clampNum($('settingsTemp')?.value, DEFAULT_SETTINGS.temperature, 0, 2);
+  appSettings.top_p = clampNum($('settingsTopP')?.value, DEFAULT_SETTINGS.top_p, 0, 1);
+  appSettings.top_k = clampNum($('settingsTopK')?.value, DEFAULT_SETTINGS.top_k, 0, 256);
+  appSettings.max_output_tokens = clampNum($('settingsMaxTokens')?.value, DEFAULT_SETTINGS.max_output_tokens, -1, 32768);
+  appSettings.historyMessages = clampNum($('settingsHistoryTurns')?.value, DEFAULT_SETTINGS.historyMessages, 2, 200);
+  appSettings.cameraMax = clampNum($('settingsCameraMax')?.value, DEFAULT_SETTINGS.cameraMax, 224, 1024);
+  appSettings.screenMax = clampNum($('settingsScreenMax')?.value, DEFAULT_SETTINGS.screenMax, 224, 1024);
+  appSettings.pdfMax = clampNum($('settingsPdfMax')?.value, DEFAULT_SETTINGS.pdfMax, 224, 1024);
+  appSettings.videoMax = clampNum($('settingsVideoMax')?.value, DEFAULT_SETTINGS.videoMax, 224, 1024);
+  appSettings.imageMax = clampNum($('settingsImageMax')?.value, DEFAULT_SETTINGS.imageMax, 224, 1536);
+  appSettings.liveFps = clampNum($('settingsLiveFps')?.value, DEFAULT_SETTINGS.liveFps, 0.2, 8);
+  appSettings.liveFrames = clampNum($('settingsLiveFrames')?.value, DEFAULT_SETTINGS.liveFrames, 1, 24);
+  appSettings.voiceThreshold = clampNum($('settingsVoiceThreshold')?.value, DEFAULT_SETTINGS.voiceThreshold, 0.002, 0.2);
+  appSettings.silenceStopMs = clampNum($('settingsSilenceMs')?.value, DEFAULT_SETTINGS.silenceStopMs, 300, 3000);
+  appSettings.minSpeechMs = clampNum($('settingsMinSpeechMs')?.value, DEFAULT_SETTINGS.minSpeechMs, 250, 2000);
+  appSettings.autoVoice = $('settingsAutoVoice')?.value === '1';
+  appSettings.startAutoWithScreen = $('settingsStartAutoWithScreen')?.value !== '0';
+  appSettings.bargeIn = Number($('settingsBargeIn')?.value ?? 1);
+  appSettings.bargeInSensitivity = clampNum($('settingsBargeInSensitivity')?.value, DEFAULT_SETTINGS.bargeInSensitivity, 1.0, 3.0);
+  appSettings.ttsMode = 'server';
+  saveSettings();
+  restartLiveFrameRecorder();
+  setAutoMic(appSettings.autoVoice);
+}
+
+function setState(s) {
+  state = s;
+  const [glow, glowDim, label] = stateColors[s] || stateColors.loading;
+  document.documentElement.style.setProperty('--glow', glow);
+  document.documentElement.style.setProperty('--glow-dim', glowDim);
+  $('stateText').textContent = label;
+  for (const el of [$('cameraTile'), $('screenTile'), $('pdfTile'), $('videoTile'), $('imageTile')]) {
+    el.classList.remove('loading','listening','processing','speaking','recording');
+    el.classList.add(s === 'recording' ? 'listening' : s);
+  }
+}
+function setStatus(cls, text) { const el=$('status'); el.className=`status-pill ${cls}`; el.textContent=text; }
+function nowId() { return ++msgCounter; }
+function escapeHtml(s){ return String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function textOfMessage(m){ return (m.text || '').replace(/<[^>]*>/g,'').trim(); }
+function cleanIncomingText(text, {final=false}={}){
+  text = String(text || '').replace(/\x00/g,' ');
+  text = text
+    .replace(/<\|\/?[^>\n]{0,80}?\|>/g,'')
+    .replace(/<\/?(?:think|thought|analysis|reasoning)[^>]*>[\s\S]*?<\/(?:think|thought|analysis|reasoning)>/gi,'')
+    .replace(/[ \t]{2,}/g,' ');
+  return final ? text.trim() : text;
+}
+function renderMessages(){
+  const box = $('messages'); box.innerHTML = '';
+  for (const m of messages) {
+    const div = document.createElement('div');
+    div.className = `msg ${m.role}${m.pending?' pending':''}`;
+    div.dataset.id = m.id;
+    const body = m.pending ? '<span class="loading-dots"><span></span><span></span><span></span></span>' : escapeHtml(m.text);
+    const meta = m.meta ? `<div class="meta">${escapeHtml(m.meta)}</div>` : '';
+    div.innerHTML = `<div class="msg-actions"><button class="msg-action edit" title="edit">✎</button><button class="msg-action del" title="delete">×</button></div><div class="msg-body">${body}</div>${meta}`;
+    box.appendChild(div);
+  }
+  $('transcript').scrollTop = $('transcript').scrollHeight;
+}
+function addMessage(role, text, meta='', pending=false){ const m={id:nowId(),role,text,meta,pending}; messages.push(m); renderMessages(); return m.id; }
+function updateMessage(id, patch){ const m=messages.find(x=>x.id===id); if(m){ Object.assign(m,patch); renderMessages(); } }
+function deleteMessage(id){ messages = messages.filter(m => m.id !== id); renderMessages(); }
+function editMessage(id){ const m=messages.find(x=>x.id===id); if(!m) return; const next = prompt('Редактировать сообщение:', m.text || ''); if(next!==null){ m.text = next; m.pending=false; renderMessages(); } }
+// v18: unified message action handler is installed later.
+function historyForServer(){ const n=Math.max(2, Math.min(200, Number(appSettings.historyMessages||64))); return messages.filter(m=>!m.pending && (m.role==='user'||m.role==='assistant') && textOfMessage(m)).slice(-n).map(m=>({role:m.role,text:textOfMessage(m)})); }
+
+
+let wsHeartbeatTimer = null;
+let wsLastPongAt = 0;
+function stopWsHeartbeat(){
+  if(wsHeartbeatTimer){ clearInterval(wsHeartbeatTimer); wsHeartbeatTimer = null; }
+}
+function startWsHeartbeat(){
+  stopWsHeartbeat();
+  wsLastPongAt = Date.now();
+  wsHeartbeatTimer = setInterval(()=>{
+    if(!ws || ws.readyState !== WebSocket.OPEN) return;
+    try{ ws.send(JSON.stringify({type:'ping', t:Date.now()})); }
+    catch(e){ console.warn('WS ping send failed', e); }
+    if(Date.now() - wsLastPongAt > 45000){
+      console.warn('WS pong timeout, forcing reconnect');
+      try{ ws.close(4000, 'pong-timeout'); }catch{}
+    }
+  }, 15000);
+}
+
+function connect(){
+  ws = new WebSocket(getActiveWsUrl());
+  ws.onopen = () => { console.info('[WS OPEN]', getActiveWsUrl()); setStatus('connected','Connected'); setState('listening'); startWsHeartbeat(); };
+  ws.onclose = (ev) => { console.warn('[WS CLOSE]', {code:ev.code, reason:ev.reason, wasClean:ev.wasClean}); stopWsHeartbeat(); setStatus('disconnected','Disconnected'); setTimeout(connect, 2000); };
+  ws.onerror = (ev) => { console.warn('[WS ERROR]', ev); setStatus('disconnected','Disconnected'); };
+  ws.onmessage = ({data}) => {
+    const msg = JSON.parse(data);
+    if (msg.type === 'pong') { wsLastPongAt = Date.now(); return; }
+    if (msg.type === 'app_status') {
+      $('modelLabel').textContent = `${msg.backend || 'backend'} · ${msg.model_label || msg.model || 'model'}`;
+      $('launcherLabel').textContent = `bat: ${msg.launcher_name || 'unknown'}`;
+      return;
+    }
+    if (msg.type === 'text' || msg.type === 'text_final') {
+      if(ignoredTextRequests.has(msg.request_id)){ if(msg.type === 'text_final') ignoredTextRequests.delete(msg.request_id); return; }
+      const txt = cleanIncomingText(msg.text || '', {final:true});
+      if (msg.transcription) {
+        const last = [...messages].reverse().find(m => m.role === 'user' && m.pending);
+        if (last) updateMessage(last.id,{pending:false,text:msg.transcription,meta:last.meta});
+      }
+      if (activeAssistantId) updateMessage(activeAssistantId,{pending:false,text:txt,meta:`LLM ${msg.llm_time || '?'}s`});
+      else activeAssistantId = addMessage('assistant', txt, `LLM ${msg.llm_time || '?'}s`);
+      lastAssistantTextForEcho = txt || lastAssistantTextForEcho;
+      if(ttsMode() === 'browser'){
+        enqueueBrowserTts('', {force:true});
+        const finishedId = activeAssistantId;
+        activeAssistantId = null; activeRequestId = null;
+        setTimeout(()=>{ if(!browserTtsSpeaking && !browserTtsQueue.length && state==='speaking'){ ttsEchoActive=false; setState('listening'); setStatus('connected','Connected'); } }, 120);
+      } else if(ttsMode() === 'off'){
+        activeAssistantId = null; activeRequestId = null;
+        setState('listening'); setStatus('connected','Connected');
+      }
+      // Server TTS is normally driven by audio_start/audio_end, but if TTS is
+      // skipped/not ready, keep Auto Mic alive after the text answer.
+      if(ttsMode() === 'server' && autoMicEnabled){
+        setTimeout(()=>{
+          if(autoMicEnabled && !recording && !micHoldActive && !micFinalizing && !autoRecording && !streamSources.length && !ttsPlaybackStarted && state !== 'speaking'){
+            setState('listening');
+            clearAutoSttDraft();
+            restartBrowserSttSoon(120);
+            setStatus('connected','Auto Mic STT listening');
+          }
+        }, 900);
+      }
+    } else if (msg.type === 'text_delta') {
+      if(ignoredTextRequests.has(msg.request_id)) return;
+      const delta = cleanIncomingText(msg.text || '', {final:false});
+      if (!activeAssistantId) activeAssistantId = addMessage('assistant','', '', false);
+      const m = messages.find(x=>x.id===activeAssistantId);
+      if (m) {
+        const nextText = cleanIncomingText((m.text || '') + delta, {final:false});
+        updateMessage(activeAssistantId,{text:nextText, pending:false});
+        lastAssistantTextForEcho = nextText || lastAssistantTextForEcho;
+        enqueueBrowserTts(delta, {force:false});
+      }
+    } else if (msg.type === 'audio_start') {
+      if(ignoredAudioRequests.has(msg.request_id)) return;
+      const replayTargetId = replayTargets.get(msg.request_id);
+
+      // If audio for an old request arrives after a new request started, drop it.
+      if(!replayTargetId && activeRequestId && msg.request_id !== activeRequestId){
+        ignoredAudioRequests.add(msg.request_id);
+        return;
+      }
+
+      const shouldUseServerAudio = ttsMode() === 'server' || !!replayTargetId;
+      if(!shouldUseServerAudio){
+        ignoredAudioRequests.add(msg.request_id);
+        return;
+      }
+
+      // Only one server-audio request can own playback. Stop previous request first.
+      if(currentAudioRequestId && currentAudioRequestId !== msg.request_id){
+        ignoredAudioRequests.add(currentAudioRequestId);
+        stopPlayback({clearRequest:true});
+      }
+      claimAudioFocus(msg.request_id);
+      resetTtsPlaybackBuffer();
+      streamSampleRate = msg.sample_rate || 24000;
+      currentAudioRequestId = msg.request_id;
+      currentAudioMessageId = replayTargetId || activeAssistantId;
+      ttsEchoActive = true;
+      speechTranscript = '';
+      setState('speaking'); // reserve mic/listening state while we prebuffer audio
+      const m = messages.find(x=>x.id===currentAudioMessageId);
+      if (m) {
+        lastAssistantTextForEcho = m.text || lastAssistantTextForEcho;
+        m.audioChunks = [];
+        m.audioSampleRate = streamSampleRate;
+        messageAudioCache.set(m.id, {chunks:m.audioChunks, sampleRate:streamSampleRate});
+      }
+    } else if (msg.type === 'audio_chunk') {
+      if(ignoredAudioRequests.has(msg.request_id)) return;
+      if(currentAudioRequestId && msg.request_id !== currentAudioRequestId){
+        ignoredAudioRequests.add(msg.request_id);
+        return;
+      }
+      if(!currentAudioRequestId && activeRequestId && msg.request_id !== activeRequestId && !replayTargets.has(msg.request_id)){
+        ignoredAudioRequests.add(msg.request_id);
+        return;
+      }
+      const targetId = currentAudioMessageId || replayTargets.get(msg.request_id) || activeAssistantId;
+      const m = messages.find(x=>x.id===targetId);
+      if (m) {
+        if(!Array.isArray(m.audioChunks)) m.audioChunks = [];
+        m.audioChunks.push(msg.audio);
+        m.audioSampleRate = streamSampleRate;
+        messageAudioCache.set(m.id, {chunks:m.audioChunks, sampleRate:streamSampleRate});
+      }
+      pushBufferedTtsChunk(msg.audio);
+    } else if (msg.type === 'audio_end') {
+      if(ignoredAudioRequests.has(msg.request_id)){
+        ignoredAudioRequests.delete(msg.request_id);
+        if(currentAudioRequestId === msg.request_id) currentAudioRequestId = null;
+        return;
+      }
+      ttsAudioEnded = true;
+      if(ttsPendingAudioChunks.length && !ttsPlaybackStarted) startBufferedTtsPlayback();
+
+      const replayTargetId = replayTargets.get(msg.request_id);
+      const targetId = currentAudioMessageId || replayTargetId || activeAssistantId;
+      const m = messages.find(x=>x.id===targetId);
+      if (m && targetId === activeAssistantId) updateMessage(activeAssistantId,{meta: `${m.meta || ''}${m.meta?' · ':''}TTS ${msg.tts_time || 0}s`});
+      else if(m) renderMessages();
+      if(replayTargetId) replayTargets.delete(msg.request_id);
+      if(!replayTargetId){ activeAssistantId = null; activeRequestId = null; }
+      currentAudioMessageId = null;
+
+      const finishWhenAudioDrained = () => {
+        if(ttsPendingAudioChunks.length && !ttsPlaybackStarted) startBufferedTtsPlayback();
+        if(streamSources.length || ttsPendingAudioChunks.length) { setTimeout(finishWhenAudioDrained, 80); return; }
+        clearTtsBufferTimer();
+        ttsPlaybackStarted = false;
+        ttsAudioEnded = false;
+        ttsEchoActive = false;
+        speechTranscript = '';
+        if(currentAudioRequestId === msg.request_id) currentAudioRequestId = null;
+        if(state==='speaking' || state==='recording') setState('listening');
+        if(autoMicEnabled){
+          clearAutoSttDraft();
+          autoSttSending=false;
+          autoSttSendingAt=0;
+          try{ if(speechRec && (speechRunning || speechStarting)) speechRec.stop(); }catch{}
+          restartBrowserSttSoon(220);
+          setStatus('connected','Auto Mic STT listening');
+        } else {
+          setStatus('connected','Connected');
+        }
+      };
+      finishWhenAudioDrained();
+    } else if (msg.type === 'error') {
+      if (activeAssistantId) updateMessage(activeAssistantId,{pending:false,text:'[ERROR] '+(msg.message||'unknown')});
+      else addMessage('assistant','[ERROR] '+(msg.message||'unknown'));
+      setState('listening');
+      if(autoMicEnabled){
+        autoSttSending=false; autoSttSendingAt=0;
+        restartBrowserSttSoon(350);
+        setStatus('connected','Auto Mic STT listening');
+      } else {
+        setStatus('connected','Connected');
+      }
+    }
+  };
+}
+
+async function ensureMicStream(){
+  const alive = micStream && micStream.getAudioTracks().some(t=>t.readyState === 'live');
+  if(alive) return micStream;
+  try{
+    micStream = await navigator.mediaDevices.getUserMedia({
+      video:false,
+      audio:{echoCancellation:true, noiseSuppression:true, autoGainControl:true}
+    });
+    return micStream;
+  }catch(e){
+    console.warn('microphone failed', e);
+    setStatus('error','Mic blocked/unavailable');
+    throw e;
+  }
+}
+
+async function startMedia(){
+  // Camera and microphone must be independent. If camera fails, Auto Mic must still work.
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({video:{width:960,height:540,facingMode:'user'}, audio:false});
+    $('cameraVideo').srcObject = mediaStream;
+  } catch(e){
+    console.warn('camera failed; mic can still work', e);
+    mediaStream = null;
+    cameraEnabled = false;
+    $('cameraToggle').textContent = 'No Camera';
+    $('cameraToggle').classList.remove('active');
+  }
+  // Do not pre-open microphone here. Auto Mic/STT or push-to-talk will request it when needed.
+}
+function ensureAudioCtx(){ if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); analyser = audioCtx.createAnalyser(); analyser.fftSize=256; analyser.smoothingTimeConstant=.75; } if(audioCtx.state==='suspended') audioCtx.resume(); }
+function captureFrame(video, maxW=640, quality=.75){ if(!video || !video.videoWidth) return null; const c=document.createElement('canvas'); const scale=Math.min(1,maxW/video.videoWidth); c.width=Math.max(1,Math.round(video.videoWidth*scale)); c.height=Math.max(1,Math.round(video.videoHeight*scale)); c.getContext('2d').drawImage(video,0,0,c.width,c.height); return c.toDataURL('image/jpeg', quality).split(',')[1]; }
+function captureCamera(){ return cameraEnabled ? captureFrame($('cameraVideo'), Number(appSettings?.cameraMax||448), .68) : null; }
+function captureScreen(){ return screenStream && screenSending ? captureFrame($('screenVideo'), Number(appSettings?.screenMax||512), .68) : null; }
+function capturePdf(){ const c=$('pdfCanvas'); if(!pdfDoc || !pdfSending || !c.width) return null; const out=document.createElement('canvas'); const scale=Math.min(1,Number(appSettings?.pdfMax||512)/c.width); out.width=Math.max(1,Math.round(c.width*scale)); out.height=Math.max(1,Math.round(c.height*scale)); out.getContext('2d').drawImage(c,0,0,out.width,out.height); return out.toDataURL('image/jpeg',.82).split(',')[1]; }
+function captureVideo(){ const v=$('fileVideo'); return v && v.src && videoSending && !v.paused && !v.ended ? captureFrame(v, Number(appSettings?.videoMax||512), .68) : null; }
+function resizeImageBlobFromUrl(url, maxW=640, quality=.82){ return new Promise((resolve)=>{ const img=new Image(); img.onload=()=>{ const c=document.createElement('canvas'); const scale=Math.min(1,maxW/img.naturalWidth); c.width=Math.max(1,Math.round(img.naturalWidth*scale)); c.height=Math.max(1,Math.round(img.naturalHeight*scale)); c.getContext('2d').drawImage(img,0,0,c.width,c.height); resolve(c.toDataURL('image/jpeg',quality).split(',')[1]); }; img.onerror=()=>resolve(null); img.src=url; }); }
+function frameHash(blob){ return blob ? `${blob.length}:${blob.slice(0,24)}:${blob.slice(-24)}` : ''; }
+function pushLiveFrame(source, blob, kind='live'){
+  if(!blob) return;
+  const buf = liveFrameBuffers[source] || (liveFrameBuffers[source]=[]);
+  const h = frameHash(blob); if(buf.length && buf[buf.length-1].hash === h) return;
+  buf.push({source, blob, kind, t: Date.now(), index: ++liveFrameSeq, hash: h});
+  const keep = Math.max(4, Math.min(48, Math.ceil(Number(appSettings.liveFrames||8) * 4)));
+  while(buf.length > keep) buf.shift();
+}
+function captureLiveTick(){
+  const cam = captureCamera(); if(cam) pushLiveFrame('camera', cam, 'live-camera');
+  const scr = captureScreen(); if(scr) pushLiveFrame('screen', scr, 'live-screen');
+  const vid = captureVideo(); if(vid) pushLiveFrame('video', vid, 'live-video');
+  updateLiveLabels();
+}
+function restartLiveFrameRecorder(){
+  if(liveFrameTimer) clearInterval(liveFrameTimer);
+  const fps = Math.max(.2, Math.min(8, Number(appSettings.liveFps||2)));
+  liveFrameTimer = setInterval(captureLiveTick, Math.round(1000/fps));
+  setTimeout(captureLiveTick, 80);
+}
+function takeRecent(source, count){ const buf=liveFrameBuffers[source]||[]; return buf.slice(-Math.max(0,count)).map(({hash,...x})=>x); }
+function visualIntent(text=''){
+  return /(экран|видишь|видно|посмотри|смотри|покажи|что\s+(?:это|там|тут|здесь)|здесь|тут|это\s+что|на\s+этом|камера|картин|фото|изображ|цвет|pdf|пдф|страниц|видео|screen|camera|image|photo|picture|video|document)/i.test(text || '');
+}
+function collectFrameSequence(opts={}){
+  const maxTotal = Math.max(1, Math.min(16, Number(appSettings.liveFrames||2)));
+  const includeScreen = opts.includeScreen === true && !!screenStream && !!screenSending;
+  const includeVideo = opts.includeVideo === true && !!$('fileVideo').src && !!videoSending;
+  const includePdf = opts.includePdf === true && !!pdfDoc && !!pdfSending;
+  const includeCamera = opts.includeCamera === true && !!cameraEnabled;
+  if(!includeScreen && !includeVideo && !includePdf && !includeCamera) return [];
+  captureLiveTick();
+  let frames = [];
+  if(includeScreen) frames.push(...takeRecent('screen', maxTotal));
+  let remaining = Math.max(0, maxTotal - frames.length);
+  if(remaining && includeVideo) frames.push(...takeRecent('video', Math.min(remaining, Math.ceil(maxTotal/2))));
+  remaining = Math.max(0, maxTotal - frames.length);
+  if(remaining && includeCamera) frames.push(...takeRecent('camera', Math.min(remaining, 1)));
+  // If buffer is still empty right after enabling a source, fall back to current frame.
+  if(includeScreen && !frames.some(f=>f.source==='screen')){ const scr=captureScreen(); if(scr && frames.length<maxTotal) frames.push({source:'screen', blob:scr, kind:'instant-screen', t:Date.now(), index:++liveFrameSeq}); }
+  if(includeVideo && !frames.some(f=>f.source==='video')){ const vid=captureVideo(); if(vid && frames.length<maxTotal) frames.push({source:'video', blob:vid, kind:'instant-video', t:Date.now(), index:++liveFrameSeq}); }
+  if(includeCamera && !frames.some(f=>f.source==='camera')){ const cam=captureCamera(); if(cam && frames.length<maxTotal) frames.push({source:'camera', blob:cam, kind:'instant-camera', t:Date.now(), index:++liveFrameSeq}); }
+  const pdf=includePdf ? capturePdf() : null; if(pdf && frames.length < Math.min(16, maxTotal+1)) frames.push({source:'pdf', blob:pdf, kind:'current-pdf-page', t:Date.now(), index:++liveFrameSeq});
+  frames.sort((a,b)=>(a.t||0)-(b.t||0));
+  return frames.slice(-Math.min(16, maxTotal + (includePdf ? 1 : 0)));
+}
+function collectImages(){ return collectFrameSequence({includeCamera:true}); }
+function collectUploadedImages(){
+  if(!imageSending || !uploadedImages.length) return [];
+  const max = Math.min(8, uploadedImages.length);
+  return uploadedImages.slice(0, max).map((blob, i)=>({source:'image', blob, kind:'uploaded-image', index:i+1, t:Date.now()}));
+}
+
+function updateLiveLabels(){
+  const pairs=[['cameraLiveLabel', cameraEnabled && (liveFrameBuffers.camera||[]).length], ['screenLiveLabel', screenStream && screenSending && (liveFrameBuffers.screen||[]).length], ['videoLiveLabel', $('fileVideo')?.src && videoSending && (liveFrameBuffers.video||[]).length], ['imageLiveLabel', uploadedImages.length && imageSending], ['pdfLiveLabel', pdfDoc && pdfSending]];
+  for(const [id,on] of pairs){ const el=$(id); if(el) el.classList.toggle('on', !!on); }
+}
+var sendPayload = null;
+
+$('sendBtn').onclick = () => { const v=$('textInput').value.trim(); if(v){ $('textInput').value=''; sendPayload({text:v}); } };
+$('textInput').addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); $('sendBtn').click(); }});
+$('resetBtn').onclick = () => { messages=[]; renderMessages(); activeAssistantId=null; if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:'reset'})); stopPlayback(); setState('listening'); };
+
+function resampleFloat32(input, fromRate, toRate=16000){ if(fromRate===toRate) return input; const ratio=fromRate/toRate; const outLen=Math.round(input.length/ratio); const out=new Float32Array(outLen); for(let i=0;i<outLen;i++){ const pos=i*ratio; const i0=Math.floor(pos); const i1=Math.min(i0+1,input.length-1); const frac=pos-i0; out[i]=input[i0]*(1-frac)+input[i1]*frac; } return out; }
+
+function estimateWavSecondsFromBase64(b64){
+  try{
+    const byteLen = Math.floor(String(b64 || '').length * 3 / 4);
+    const byteRate = 32000; // 16 kHz * 16-bit mono
+    return Math.max(0, Math.round(((byteLen - 44) / byteRate) * 10) / 10);
+  }catch(e){ return 0; }
+}
+
+function float32ToWavBase64(samples){ const buf=new ArrayBuffer(44+samples.length*2); const v=new DataView(buf); const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));}; w(0,'RIFF'); v.setUint32(4,36+samples.length*2,true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,16000,true); v.setUint32(28,32000,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,samples.length*2,true); for(let i=0;i<samples.length;i++){ const s=Math.max(-1,Math.min(1,samples[i])); v.setInt16(44+i*2, s<0?s*0x8000:s*0x7fff, true); } const bytes=new Uint8Array(buf); let bin=''; for(let b of bytes) bin+=String.fromCharCode(b); return btoa(bin); }
+
+function normalizeSpeechText(s=''){
+  return String(s || '').toLowerCase()
+    .replace(/[ё]/g,'е')
+    .replace(/[^\p{L}\p{N}\s]+/gu,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+function currentAssistantText(){
+  const m = activeAssistantId ? messages.find(x=>x.id===activeAssistantId) : null;
+  return m?.text || lastAssistantTextForEcho || '';
+}
+function isLikelyAssistantEcho(heard=''){
+  const h = normalizeSpeechText(heard);
+  if(!h) return true;
+  const assistant = normalizeSpeechText(currentAssistantText()).slice(-1400);
+  if(!assistant) return false;
+
+  if(assistant.includes(h) && h.length > 8) return true;
+
+  const hw = h.split(' ').filter(w=>w.length > 2);
+  if(!hw.length) return true;
+  const echoHits = hw.filter(w=>assistant.includes(w)).length;
+  return hw.length >= 2 && echoHits / hw.length >= 0.62;
+}
+function shouldBargeFromStt(heard='', isFinal=false){
+  if(state !== 'speaking' || !autoMicEnabled) return false;
+
+  const h = normalizeSpeechText(heard);
+  if(!h || h.length < 3) return false;
+
+  // Explicit stop words must always stop playback, even if normal barge-in is off.
+  const stopLike = /^(стоп|хватит|молчи|замолчи|стой|пауза|перестань|прерви|остановись|нет|stop|wait|pause|shut up)\b/i.test(h);
+  if(stopLike) return true;
+
+  if(Number(appSettings.bargeIn ?? 1) !== 1) return false;
+  if(Date.now() - speakingStartedAt < Number(appSettings.bargeInGraceMs || 250)) return false;
+  if(isLikelyAssistantEcho(h)) return false;
+
+  // Normal interruption: require final STT and at least two words to avoid echo.
+  if(!isFinal) return false;
+  return h.split(' ').filter(Boolean).length >= 2;
+}
+
+
+function ttsMode(){ return 'server'; }
+function cleanForBrowserTts(s=''){
+  return String(s || '')
+    .replace(/[🌀-🫿✀-➿]+/gu, '')
+    .replace(/[*_`#>]+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function browserTtsSupported(){ return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window; }
+function pickBrowserVoice(){
+  const voices = speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
+  const lang = (appSettings.sttLang || 'ru-RU').slice(0,2).toLowerCase();
+  return voices.find(v => (v.lang || '').toLowerCase().startsWith(lang)) || voices.find(v => /ru|russian/i.test((v.lang||'') + ' ' + (v.name||''))) || voices[0] || null;
+}
+function extractBrowserTtsChunks(force=false){
+  const chunks = [];
+  let b = browserTtsBuffer.replace(/\s+/g,' ').trim();
+  while(b){
+    let split = -1;
+    const m = b.match(/^(.{12,220}?[.!?…])(?:\s+|$)/u);
+    if(m) split = m[1].length;
+    if(split < 0 && (force || b.length >= 180)){
+      const cut = Math.min(b.length, 220);
+      const sp = b.lastIndexOf(' ', cut);
+      split = sp > 60 ? sp : cut;
+    }
+    if(split < 0) break;
+    const part = cleanForBrowserTts(b.slice(0, split));
+    if(part) chunks.push(part);
+    b = b.slice(split).trim();
+  }
+  browserTtsBuffer = b;
+  return chunks;
+}
+function enqueueBrowserTts(text, {force=false}={}){
+  if(ttsMode() !== 'browser' || !browserTtsSupported()) return;
+  if(text) browserTtsBuffer += text;
+  const chunks = extractBrowserTtsChunks(force);
+  if(chunks.length){
+    browserTtsQueue.push(...chunks);
+    pumpBrowserTts();
+  }
+}
+function pumpBrowserTts(){
+  if(ttsMode() !== 'browser' || !browserTtsSupported()) return;
+  if(browserTtsSpeaking || !browserTtsQueue.length) return;
+  const text = browserTtsQueue.shift();
+  if(!text) return;
+  const u = new SpeechSynthesisUtterance(text);
+  const v = pickBrowserVoice();
+  if(v) u.voice = v;
+  u.lang = appSettings.sttLang || 'ru-RU';
+  u.rate = Number(appSettings.browserTtsRate || 1.0);
+  u.pitch = 1.0;
+  u.volume = 1.0;
+  browserTtsSpeaking = true;
+  ttsEchoActive = true;
+  setState('speaking');
+  u.onend = u.onerror = () => {
+    browserTtsSpeaking = false;
+    if(browserTtsQueue.length) {
+      // Small gap prevents Chrome from swallowing the next utterance,
+      // but is far shorter than server-side TTS generation gaps.
+      setTimeout(pumpBrowserTts, 35);
+      return;
+    }
+    if(!activeAssistantId){
+      ttsEchoActive = false;
+      speechTranscript = '';
+      if(state === 'speaking') setState('listening');
+      if(autoMicEnabled) setTimeout(()=>{ if(autoMicEnabled && !speechRunning && !recording && !autoRecording) startBrowserSTT(); }, 150);
+    }
+  };
+  try{ speechSynthesis.speak(u); }catch(e){ browserTtsSpeaking=false; console.warn('Browser TTS failed', e); }
+}
+function stopBrowserTts(){
+  browserTtsBuffer = '';
+  browserTtsQueue = [];
+  browserTtsSpeaking = false;
+  try{ if(browserTtsSupported()) speechSynthesis.cancel(); }catch{}
+}
+
+
+function clearAutoSttTimer(){
+  if(autoSttTimer){ clearTimeout(autoSttTimer); autoSttTimer = null; }
+}
+function sleep(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
+function chooseBetterTranscript(a='', b=''){
+  const aa = normalizeSpeechText(a);
+  const bb = normalizeSpeechText(b);
+  if(bb.length > aa.length) return b;
+  return a || b || '';
+}
+function restartBrowserSttSoon(delay=220){
+  if(autoSttRestartTimer){ clearTimeout(autoSttRestartTimer); autoSttRestartTimer = null; }
+  autoSttRestartTimer = setTimeout(()=>{
+    autoSttRestartTimer = null;
+    ensureAutoMicListening();
+  }, delay);
+}
+function maybeSendAutoStt({force=false}={}){
+  if(!autoMicEnabled || autoSttSending) return;
+  if(state === 'processing') return;
+  const draft = (autoSttDraft || speechTranscript || '').trim();
+  const clean = normalizeSpeechText(draft);
+
+  if(!clean || clean.length < 2){
+    if(force) clearAutoSttDraft({toListening:true});
+    return;
+  }
+
+  if(isLikelyAssistantEcho(clean)){
+    // Critical fix: do not leave assistant echo in autoSttDraft.
+    // A stuck draft made Auto Mic look dead after a few assistant replies.
+    clearAutoSttDraft({toListening:true});
+    restartBrowserSttSoon(180);
+    return;
+  }
+
+  const now = Date.now();
+  const stopLike = /^(стоп|хватит|молчи|замолчи|стой|пауза|перестань|нет|stop|wait|pause)\b/i.test(clean);
+  const enoughWords = clean.split(' ').filter(Boolean).length >= 2;
+  const enoughTime = now - autoSttLastAt >= Number(appSettings.silenceStopMs || 900);
+  if(!force && !stopLike && !enoughWords && !enoughTime) return;
+
+  if(clean === lastAutoSttSent && now - lastAutoSttAt < 2500){
+    clearAutoSttDraft({toListening:true});
+    return;
+  }
+
+  autoSttSending = true;
+  autoSttSendingAt = now;
+  lastAutoSttSent = clean;
+  lastAutoSttAt = now;
+  autoSuppressUntil = now + 1800;
+
+  // Stop current STT cleanly before sending, then watchdog/audio_end will restart it.
+  try{ if(speechRec && speechRunning) speechRec.stop(); }catch{}
+  speechRec = null;
+  speechRunning = false;
+  speechStarting = false;
+
+  const textToSend = draft;
+  clearAutoSttDraft();
+
+  setState('processing');
+  sendPayload({text:textToSend, suppressUserEcho:false});
+
+  setTimeout(()=>{
+    autoSttSending = false;
+    autoSttSendingAt = 0;
+    if(autoMicEnabled) restartBrowserSttSoon(350);
+  }, 1200);
+}
+function scheduleAutoSttSend(){
+  clearAutoSttTimer();
+  autoSttTimer = setTimeout(()=>maybeSendAutoStt({force:true}), Number(appSettings.silenceStopMs || 900));
+}
+
+
+function clearAutoSttDraft({toListening=false}={}){
+  autoSttDraft = '';
+  speechTranscript = '';
+  clearAutoSttTimer();
+  if(toListening && state === 'recording' && !recording && !autoRecording) setState('listening');
+}
+function shouldKeepSttPaused(){
+  if(!autoMicEnabled) return true;
+  if(!Number(appSettings.browserStt ?? 1)) return true;
+  if(recording || micHoldActive || micFinalizing || autoRecording) return true;
+  if(state === 'processing') return true;
+  if(state === 'speaking' && Number(appSettings.bargeIn ?? 0) !== 1) return true;
+  return false;
+}
+function ensureAutoMicListening({force=false}={}){
+  if(!autoMicEnabled) return;
+  if(!Number(appSettings.browserStt ?? 1)) return;
+  if(!force && shouldKeepSttPaused()) return;
+
+  if(force){
+    try{ if(speechRec) speechRec.abort(); }catch{}
+    speechRec = null;
+    speechRunning = false;
+    speechStarting = false;
+  }
+
+  if(!speechRunning && !speechStarting) startBrowserSTT();
+}
+function startAutoMicWatchdog(){
+  if(autoMicWatchdogTimer) return;
+  autoMicWatchdogTimer = setInterval(()=>{
+    if(!autoMicEnabled) return;
+    const now = Date.now();
+
+    // If a previous autosend got stuck, unlock Auto Mic.
+    if(autoSttSending && autoSttSendingAt && now - autoSttSendingAt > 6500){
+      console.warn('Auto Mic: autoSttSending stuck, resetting');
+      autoSttSending = false;
+      autoSttSendingAt = 0;
+      clearAutoSttDraft({toListening:true});
+    }
+
+    // If UI got stuck in Recording without a real mic hold/VAD recording, reset.
+    const lastActivity = Math.max(speechLastResultAt || 0, autoSttLastAt || 0, speechLastStartAt || 0, autoStartedAt || 0);
+    if(state === 'recording' && !recording && !micHoldActive && !micFinalizing && !autoRecording && lastActivity && now - lastActivity > 4500){
+      console.warn('Auto Mic: stale recording state, resetting');
+      clearAutoSttDraft({toListening:true});
+      setState('listening');
+    }
+
+    if(shouldKeepSttPaused()) return;
+
+    // Chrome SpeechRecognition sometimes silently dies or freezes.
+    if(speechStarting && speechLastStartAt && now - speechLastStartAt > 4500){
+      console.warn('Auto Mic: STT stuck starting, force restart');
+      ensureAutoMicListening({force:true});
+      return;
+    }
+    if(speechRunning && !speechLastResultAt && speechLastStartAt && now - speechLastStartAt > 15000){
+      console.warn('Auto Mic: STT running without results, force restart');
+      ensureAutoMicListening({force:true});
+      return;
+    }
+    if(speechRunning && speechLastResultAt && now - speechLastResultAt > 18000){
+      console.warn('Auto Mic: STT stale, force restart');
+      ensureAutoMicListening({force:true});
+      return;
+    }
+    if(!speechRunning && !speechStarting){
+      ensureAutoMicListening();
+    }
+  }, 850);
+}
+
+function stopAutoMicWatchdog(){
+  if(autoMicWatchdogTimer){ clearInterval(autoMicWatchdogTimer); autoMicWatchdogTimer = null; }
+}
+
+function browserSttSupported(){ return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+function startBrowserSTT(){
+  if(speechRunning || speechStarting) return;
+  speechTranscript = '';
+  if(!Number(appSettings.browserStt ?? 1)) return;
+  if(!browserSttSupported()){ console.warn('Browser STT unsupported in this browser'); setStatus('error','Browser STT unsupported'); return; }
+
+  try{ if(speechRec) speechRec.abort(); }catch{}
+  speechRec = null;
+  speechStarting = true;
+  speechLastStartAt = Date.now();
+
+  try{
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    speechRec = new SR();
+    speechRec.lang = appSettings.sttLang || 'ru-RU';
+    speechRec.continuous = true;
+    speechRec.interimResults = true;
+    speechRec.maxAlternatives = 1;
+
+    speechRec.onstart = ()=>{
+      speechRunning = true;
+      speechStarting = false;
+      speechLastStartAt = Date.now();
+      speechLastResultAt = 0;
+      if(recording) setStatus('connected','Push mic: STT listening');
+      else if(autoMicEnabled) setStatus('connected','Auto Mic STT listening');
+    };
+
+    speechRec.onresult = (ev)=>{
+      speechLastResultAt = Date.now();
+      let finalText = '', interim = '';
+      for(let i=0; i<ev.results.length; i++){
+        const txt = (ev.results[i][0]?.transcript || '').trim();
+        if(ev.results[i].isFinal) finalText += txt + ' ';
+        else interim += txt + ' ';
+      }
+      const heard = (finalText || interim).trim();
+      speechTranscript = heard;
+
+      const isFinalSpeech = !!finalText.trim();
+      const heardClean = normalizeSpeechText(heard);
+      if(!heardClean) return;
+
+      // Main Auto Mic path: Browser STT sends text directly.
+      if(autoMicEnabled && !micHoldActive && !recording && !micFinalizing && !autoSttSending && (state === 'listening' || state === 'recording') && !isLikelyAssistantEcho(heardClean)){
+        autoSttDraft = heard;
+        autoSttLastAt = Date.now();
+        if(state === 'listening') setState('recording');
+        if(isFinalSpeech) maybeSendAutoStt({force:true});
+        else scheduleAutoSttSend();
+        return;
+      }
+
+      // If it was assistant echo while we were in recording state, clear it,
+      // otherwise autoSttDraft can block the fallback VAD forever.
+      if(autoMicEnabled && !micHoldActive && !recording && !micFinalizing && isLikelyAssistantEcho(heardClean)){
+        clearAutoSttDraft({toListening:true});
+        return;
+      }
+
+      // Optional barge-in while assistant speaks.
+      if(!micHoldActive && !recording && !micFinalizing && shouldBargeFromStt(heard, isFinalSpeech)){
+        requestInterrupt(true);
+        autoHotFrames = 0;
+        autoLastVoiceAt = Date.now();
+        if(isFinalSpeech && !/^(стоп|хватит|молчи|замолчи|стой|пауза|перестань|stop|wait|pause)$/i.test(heardClean)){
+          autoSttDraft = heard;
+          setTimeout(()=>maybeSendAutoStt({force:true}), 120);
+        }
+      }
+    };
+
+    speechRec.onerror = (e)=>{
+      const err = e.error || e.message || e;
+      console.warn('Mic speech recognition error:', err);
+      speechRunning = false;
+      speechStarting = false;
+      // no-speech/audio-capture/network can happen after a few turns. Watchdog restarts it.
+      if(recording) setStatus(err === 'not-allowed' ? 'error' : 'connected', err === 'not-allowed' ? 'Mic permission blocked' : 'Push mic: raw fallback');
+      if(autoMicEnabled){ setStatus(err === 'not-allowed' ? 'error' : 'connected', err === 'not-allowed' ? 'Mic permission blocked' : 'Auto Mic raw fallback/listening'); restartBrowserSttSoon(err === 'not-allowed' ? 2000 : 450); }
+    };
+
+    speechRec.onend = ()=>{
+      speechRunning = false;
+      speechStarting = false;
+      speechRec = null;
+      if(autoMicEnabled && !autoSttSending && !recording && !micFinalizing) restartBrowserSttSoon(220);
+    };
+
+    speechRec.start();
+  }catch(e){
+    console.warn('Browser STT start failed:', e?.message || e);
+    speechRec = null;
+    speechRunning = false;
+    speechStarting = false;
+    if(autoMicEnabled) restartBrowserSttSoon(900);
+  }
+}
+function stopBrowserSTT(){
+  const text = (speechTranscript || '').trim();
+  try{ if(speechRec && (speechRunning || speechStarting)) speechRec.stop(); }catch{}
+  speechRec = null; speechRunning = false; speechStarting = false;
+  return text;
+}
+async function stopBrowserSTTFinal(delay=320){
+  const before = (speechTranscript || '').trim();
+  try{ if(speechRec && (speechRunning || speechStarting)) speechRec.stop(); }catch{}
+  // Chrome may deliver the final transcript AFTER stop() / button release.
+  // Wait a little so the last word is not cut off.
+  await sleep(delay);
+  const after = (speechTranscript || '').trim();
+  speechRec = null; speechRunning = false; speechStarting = false;
+  return chooseBetterTranscript(before, after);
+}
+
+async function startRecording(){
+  if(recording || micHoldActive || micFinalizing) return;
+  micHoldActive = true;
+  micStartedAt = Date.now();
+  recording = true;
+  recRawActive = false;
+
+  // Visual feedback FIRST, before any permission/model/STT async code.
+  const btn = $('micBtn');
+  btn?.classList.add('recording');
+  if(btn) btn.textContent = '🔴';
+  setState('recording');
+  setStatus('connected','Push mic: starting');
+
+  requestInterrupt(true);
+  clearAutoSttDraft();
+  recChunks=[];
+  speechTranscript='';
+  autoSttDraft='';
+
+  // Start browser STT immediately from the user's click gesture.
+  // If Chrome STT fails, raw WAV fallback below still records.
+  if(Number(appSettings.browserStt ?? 1) === 1 && browserSttSupported()){
+    // Important: aborting Auto Mic STT is not enough. Reset flags before starting
+    // push-to-talk STT, otherwise startBrowserSTT() returns immediately.
+    try{ if(speechRec) speechRec.abort(); }catch{}
+    speechRec = null;
+    speechRunning = false;
+    speechStarting = false;
+    startBrowserSTT();
+  }
+
+  // Always try raw recording too. This makes the button work even when
+  // Chrome SpeechRecognition silently dies / has no result / no internet.
+  try{
+    await ensureMicStream();
+    if(!micHoldActive || !recording) return;
+    ensureAudioCtx();
+    const tracks = micStream?.getAudioTracks() || [];
+    if(!tracks.length) throw new Error('no audio tracks');
+
+    recSampleRate=audioCtx.sampleRate;
+    const holdStream = new MediaStream(tracks);
+    recSource = audioCtx.createMediaStreamSource(holdStream);
+    recProcessor = audioCtx.createScriptProcessor(4096,1,1);
+    recZeroGain=audioCtx.createGain();
+    recZeroGain.gain.value=0;
+    recProcessor.onaudioprocess = (e)=>{
+      if(recording) recChunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+    };
+    recSource.connect(recProcessor);
+    recProcessor.connect(recZeroGain);
+    recZeroGain.connect(audioCtx.destination);
+    recRawActive = true;
+    setStatus('connected', Number(appSettings.browserStt ?? 1) === 1 ? 'Push mic: STT + raw' : 'Push mic: raw recording');
+  }catch(e){
+    console.warn('Push mic raw fallback unavailable:', e);
+    recRawActive = false;
+    if(!browserSttSupported() || Number(appSettings.browserStt ?? 1) !== 1){
+      setStatus('error','Mic unavailable');
+    }else{
+      setStatus('connected','Push mic: STT only');
+    }
+  }
+}
+
+function stopRecording(){
+  if(micFinalizing) return;
+  if(!micHoldActive && !recording) return;
+
+  // Button released: don't send immediately. Chrome STT often finalizes the
+  // last word a few hundred ms AFTER release, so keep recording briefly.
+  micHoldActive=false;
+  micFinalizing=true;
+
+  const btn = $('micBtn');
+  btn?.classList.remove('recording');
+  if(btn) btn.textContent = '⏳';
+  setStatus('connected','Push mic: finishing...');
+
+  if(micFinalizeTimer) clearTimeout(micFinalizeTimer);
+  micFinalizeTimer = setTimeout(()=>finalizeRecording(), 520);
+}
+
+async function finalizeRecording(){
+  if(!micFinalizing && !recording) return;
+  micFinalizing=false;
+  if(micFinalizeTimer){ clearTimeout(micFinalizeTimer); micFinalizeTimer=null; }
+
+  recording=false;
+
+  const transcriptBeforeStop = (speechTranscript || autoSttDraft || '').trim();
+  let transcript = await stopBrowserSTTFinal(360);
+  transcript = chooseBetterTranscript(transcriptBeforeStop, transcript).trim();
+  if(isLikelyAssistantEcho(transcript)) transcript = '';
+
+  const btn = $('micBtn');
+  if(btn) btn.textContent = '🎙';
+
+  try{recProcessor?.disconnect(); recSource?.disconnect(); recZeroGain?.disconnect();}catch{}
+  recProcessor=null; recSource=null; recZeroGain=null;
+
+  const len=recChunks.reduce((a,c)=>a+c.length,0);
+  const hasEnoughRaw = recRawActive && len >= recSampleRate*0.12;
+  const micModeRaw = appSettings.audioInputMode || (Number(appSettings.sendRawAudio || 0) ? 'native' : 'stt');
+  const micMode = ['stt','native','hybrid'].includes(micModeRaw) ? micModeRaw : 'stt';
+  const wantsRaw = micMode === 'native' || micMode === 'hybrid';
+
+  if(transcript && !(wantsRaw && hasEnoughRaw)){
+    recChunks=[];
+    recRawActive=false;
+    clearAutoSttDraft();
+    sendPayload({text:transcript});
+    if(autoMicEnabled) setTimeout(()=>{ if(autoMicEnabled && !recording && !micHoldActive && !micFinalizing) restartBrowserSttSoon(900); }, 900);
+    return;
+  }
+
+  if(hasEnoughRaw){
+    const merged=new Float32Array(len);
+    let off=0;
+    for(const c of recChunks){ merged.set(c,off); off+=c.length; }
+    recChunks=[];
+    recRawActive=false;
+    clearAutoSttDraft();
+    const wav = float32ToWavBase64(resampleFloat32(merged, recSampleRate, 16000));
+    setStatus('processing', wantsRaw ? (micMode === 'native' ? 'Sending native audio' : 'Sending hybrid voice') : 'Sending voice audio');
+    sendPayload({audio:wav, transcript:transcript});
+    if(autoMicEnabled) setTimeout(()=>{ if(autoMicEnabled && !recording && !autoRecording) restartBrowserSttSoon(350); }, 450);
+    return;
+  }
+
+  recChunks=[];
+  recRawActive=false;
+  clearAutoSttDraft();
+  setState('listening');
+  setStatus('connected','No speech recognized');
+  if(autoMicEnabled) restartBrowserSttSoon(300);
+}
+
+function rmsOf(buf){ let sum=0; for(let i=0;i<buf.length;i++){ const v=buf[i]; sum += v*v; } return Math.sqrt(sum / Math.max(1, buf.length)); }
+function updateAutoMicUI(){
+  const on = !!autoMicEnabled;
+  for(const id of ['autoMicBtn','screenAutoMicBtn']){ const el=$(id); if(el){ el.classList.toggle('live-on', on); el.textContent = on ? 'Auto Mic On' : 'Auto Mic'; } }
+  appSettings.autoVoice = on; saveSettings();
+}
+async function setAutoMic(on){
+  autoMicEnabled = !!on; updateAutoMicUI();
+  if(autoMicEnabled){
+    clearAutoSttDraft();
+    autoSttSending=false;
+    autoSttSendingAt=0;
+    autoSttOnlyMode = Number(appSettings.browserStt ?? 1) === 1;
+
+    // Stable Auto Mic path: do NOT start WebAudio/VAD when Browser STT is on.
+    // The hybrid raw fallback made Auto Mic get stuck after some turns.
+    startAutoMicWatchdog();
+    if(autoSttOnlyMode){
+      stopAutoMonitorRawOnly();
+      setState('listening');
+      // Start immediately from the Auto Mic button click. Delayed start can fail
+      // or feel dead in Chrome after permissions/STT restarts.
+      ensureAutoMicListening({force:true});
+      restartBrowserSttSoon(250);
+      setStatus('connected','Auto Mic STT listening');
+      return;
+    }
+
+    // Raw fallback only when Mic speech recognition is OFF.
+    try{ await startAutoMonitor(); }
+    catch(e){ console.warn('Auto Mic raw fallback failed:', e); }
+    setStatus('connected','Auto Mic raw listening');
+  } else {
+    stopAutoMicWatchdog();
+    clearAutoSttDraft();
+    autoSttSending=false;
+    autoSttSendingAt=0;
+    autoSttOnlyMode=false;
+    stopAutoMonitor();
+    setStatus('connected','Connected');
+  }
+}
+function stopAutoMonitorRawOnly(){
+  autoMonitoring = false;
+  autoRecording = false;
+  autoChunks = [];
+  try{autoProcessor?.disconnect(); autoSource?.disconnect(); autoZeroGain?.disconnect();}catch{}
+  autoProcessor=null; autoSource=null; autoZeroGain=null;
+}
+
+async function startAutoMonitor(){
+  if(autoMonitoring) return;
+
+  // Hybrid mode: Chrome STT is preferred, WebAudio VAD is fallback.
+  // If WebAudio mic fails, keep Auto Mic alive via STT instead of turning it off.
+  try{ await ensureMicStream(); }
+  catch(e){
+    console.warn('Auto Mic raw fallback unavailable:', e);
+    if(Number(appSettings.browserStt ?? 1) === 1){
+      autoMonitoring = false;
+      return;
+    }
+    autoMicEnabled=false; updateAutoMicUI(); return;
+  }
+  ensureAudioCtx();
+  const tracks = micStream?.getAudioTracks() || [];
+  if(!tracks.length){
+    console.warn('Auto Mic: microphone unavailable');
+    if(Number(appSettings.browserStt ?? 1) === 1){
+      autoMonitoring = false;
+      return;
+    }
+    autoMicEnabled=false; updateAutoMicUI(); return;
+  }
+  const vadStream = new MediaStream(tracks);
+  autoSource = audioCtx.createMediaStreamSource(vadStream);
+  autoProcessor = audioCtx.createScriptProcessor(2048,1,1);
+  autoZeroGain = audioCtx.createGain(); autoZeroGain.gain.value = 0;
+  autoSampleRate = audioCtx.sampleRate;
+  autoNoiseFloor = 0.006; autoHotFrames = 0; autoPreRoll = [];
+  if(Number(appSettings.browserStt ?? 1)) startBrowserSTT();
+  autoProcessor.onaudioprocess = (e)=>{
+    if(!autoMicEnabled || recording) return;
+    if(autoSttDraft) return;
+    if(Date.now() < autoSuppressUntil) return;
+    if(state === 'processing') return;
+    const input = new Float32Array(e.inputBuffer.getChannelData(0));
+    const rms = rmsOf(input);
+    const now = Date.now();
+    const baseThreshold = Number(appSettings.voiceThreshold || 0.04);
+    const isSpeakingNow = state === 'speaking';
+    const normalThreshold = Math.max(baseThreshold, autoNoiseFloor * 4.0, 0.018);
+
+    if(!autoRecording){
+      autoPreRoll.push(input);
+      if(autoPreRoll.length > 48) autoPreRoll.shift();
+
+      // Do NOT use raw RMS to interrupt while the assistant speaks.
+      // Speakers/echo make RMS unreliable and caused self-interrupts.
+      // Smart Browser STT above handles barge-in by ignoring assistant-echo text.
+      if(isSpeakingNow){
+        autoHotFrames = 0;
+        return;
+      }
+
+      autoNoiseFloor = autoNoiseFloor * 0.985 + Math.min(rms, baseThreshold) * 0.015;
+      if(rms >= normalThreshold) autoHotFrames += 1; else autoHotFrames = Math.max(0, autoHotFrames - 1);
+
+      if(autoHotFrames >= 3){
+        autoRecording = true;
+        autoStartedAt = now;
+        autoLastVoiceAt = now;
+        autoChunks = autoPreRoll.slice();
+        autoPreRoll = [];
+        // STT is already running in Auto Mic mode; do not reset transcript here,
+        // otherwise the first word can be cut before VAD confirms speech.
+        setState('recording');
+      }
+      return;
+    }
+
+    autoChunks.push(input);
+    if(rms >= dynThreshold * 0.75){
+      autoLastVoiceAt = now;
+    }
+    const minSpeechMs = Number(appSettings.minSpeechMs || 550);
+    if(now - autoLastVoiceAt > Number(appSettings.silenceStopMs || 950) && now - autoStartedAt >= minSpeechMs){
+      finishAutoRecording();
+    }
+  };
+  autoSource.connect(autoProcessor); autoProcessor.connect(autoZeroGain); autoZeroGain.connect(audioCtx.destination);
+  autoMonitoring = true;
+}
+function stopAutoMonitor(){
+  autoMicEnabled = false;
+  autoMonitoring = false;
+  autoRecording = false;
+  autoChunks = [];
+  try{autoProcessor?.disconnect(); autoSource?.disconnect(); autoZeroGain?.disconnect();}catch{}
+  stopBrowserSTT();
+  clearAutoSttDraft(); autoSttSending=false; autoSttSendingAt=0;
+  autoProcessor=null; autoSource=null; autoZeroGain=null;
+  updateAutoMicUI();
+  if(state === 'recording') setState('listening');
+}
+function finishAutoRecording(){
+  if(!autoRecording) return;
+  autoRecording = false;
+  autoHotFrames = 0;
+  const len = autoChunks.reduce((a,c)=>a+c.length,0);
+  const minLen = autoSampleRate * (Number(appSettings.minSpeechMs || 550) / 1000);
+  if(len < minLen){ autoChunks=[]; stopBrowserSTT(); setState('listening'); return; }
+  const merged = new Float32Array(len); let off=0; for(const c of autoChunks){ merged.set(c,off); off+=c.length; }
+  autoChunks=[];
+  const wav = float32ToWavBase64(resampleFloat32(merged, autoSampleRate, 16000));
+  let transcript = stopBrowserSTT();
+  if(isLikelyAssistantEcho(transcript)) transcript = '';
+  sendPayload({audio:wav, transcript});
+  if(autoMicEnabled) setTimeout(()=>{ if(autoMicEnabled && !recording && !autoRecording) restartBrowserSttSoon(250); }, 250);
+}
+async function startMediaIfNeeded(){ if(!mediaStream) await startMedia(); }
+const micButton = $('micBtn');
+
+async function beginMicHold(e){
+  e?.preventDefault?.();
+  e?.stopPropagation?.();
+  if(e?.pointerId != null){
+    micPointerId = e.pointerId;
+    try{ micButton?.setPointerCapture(e.pointerId); }catch{}
+  }
+  await startRecording();
+}
+function endMicHold(e){
+  e?.preventDefault?.();
+  e?.stopPropagation?.();
+  if(e?.pointerId != null){
+    try{ micButton?.releasePointerCapture(e.pointerId); }catch{}
+  }
+  micPointerId = null;
+  stopRecording();
+}
+
+micButton?.addEventListener('pointerdown', beginMicHold);
+micButton?.addEventListener('pointerup', endMicHold);
+micButton?.addEventListener('pointercancel', endMicHold);
+
+// Fallbacks for browsers/devices where pointer events are weird.
+micButton?.addEventListener('mousedown', (e)=>{ if(!micHoldActive) beginMicHold(e); });
+window.addEventListener('mouseup', (e)=>{ if(micHoldActive) endMicHold(e); });
+micButton?.addEventListener('touchstart', (e)=>{ if(!micHoldActive) beginMicHold(e); }, {passive:false});
+window.addEventListener('touchend', (e)=>{ if(micHoldActive) endMicHold(e); }, {passive:false});
+
+window.addEventListener('blur', ()=>{ if(micHoldActive) stopRecording(); });
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden && micHoldActive) stopRecording(); });
+$('autoMicBtn')?.addEventListener('click', ()=> setAutoMic(!autoMicEnabled));
+$('screenAutoMicBtn')?.addEventListener('click', ()=> setAutoMic(!autoMicEnabled));
+
+
+function clearTtsBufferTimer(){
+  if(ttsBufferTimer){ clearTimeout(ttsBufferTimer); ttsBufferTimer = null; }
+}
+function resetTtsPlaybackBuffer(){
+  clearTtsBufferTimer();
+  ttsPendingAudioChunks = [];
+  ttsPlaybackStarted = false;
+  ttsAudioEnded = false;
+}
+function startBufferedTtsPlayback(){
+  if(ttsPlaybackStarted) return;
+  claimAudioFocus(currentAudioRequestId || activeRequestId || '');
+  if(ttsPlaybackStarted) return;
+  clearTtsBufferTimer();
+  ensureAudioCtx();
+  try{ if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); }catch{}
+  speakingStartedAt = Date.now();
+  // Slight buffer lead: prevents the first phrase from starting instantly and
+  // then falling into silence while Supertonic is still generating chunk #2.
+  streamNextTime = audioCtx.currentTime + 0.14;
+  ttsPlaybackStarted = true;
+  setState('speaking');
+  while(ttsPendingAudioChunks.length){
+    queueAudioChunk(ttsPendingAudioChunks.shift());
+  }
+}
+function pushBufferedTtsChunk(chunk){
+  if(!chunk) return;
+  if(ttsPlaybackStarted){
+    queueAudioChunk(chunk);
+    return;
+  }
+  ttsPendingAudioChunks.push(chunk);
+
+  // Sentence-stream mode: server sends audio per completed sentence.
+  // Start when the first sentence audio is ready, not after the whole answer.
+  if(ttsPendingAudioChunks.length >= 1 || ttsAudioEnded){
+    startBufferedTtsPlayback();
+  } else if(!ttsBufferTimer){
+    ttsBufferTimer = setTimeout(()=>startBufferedTtsPlayback(), 650);
+  }
+}
+
+
+function trimAndFadePcm(f32, sampleRate){
+  if(!f32 || !f32.length) return f32;
+  const threshold = 0.006;
+  const pad = Math.max(1, Math.floor(sampleRate * 0.018));
+  let start = 0, end = f32.length - 1;
+
+  while(start < f32.length && Math.abs(f32[start]) < threshold) start++;
+  while(end > start && Math.abs(f32[end]) < threshold) end--;
+
+  start = Math.max(0, start - pad);
+  end = Math.min(f32.length - 1, end + pad);
+
+  if(end <= start + sampleRate * 0.08) {
+    // too short after trim; keep original to avoid cutting words
+    start = 0; end = f32.length - 1;
+  }
+
+  let out = f32.subarray(start, end + 1);
+  // Copy because subarray can keep large backing buffer and because we apply fades.
+  out = new Float32Array(out);
+
+  const fadeN = Math.min(Math.floor(sampleRate * 0.010), Math.floor(out.length / 4));
+  for(let i=0;i<fadeN;i++){
+    const g = i / Math.max(1, fadeN);
+    out[i] *= g;
+    out[out.length - 1 - i] *= g;
+  }
+  return out;
+}
+
+function stopPlayback({clearRequest=true}={}){
+  for(const s of streamSources){
+    try{ s.onended = null; }catch{}
+    try{s.stop(0);}catch{}
+    try{s.disconnect?.();}catch{}
+  }
+  streamSources=[];
+  streamNextTime=0;
+  resetTtsPlaybackBuffer();
+  stopBrowserTts();
+  ttsEchoActive = false;
+  ttsAudioEnded = false;
+  ttsPlaybackStarted = false;
+  currentAudioMessageId = null;
+  if(clearRequest) currentAudioRequestId = null;
+}
+function startStreamPlayback(){ stopPlayback(); ensureAudioCtx(); speakingStartedAt = Date.now(); streamNextTime=audioCtx.currentTime+.06; setState('speaking'); }
+function queueAudioChunk(base64Pcm){
+  ensureAudioCtx();
+  const bin=atob(base64Pcm);
+  const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  const int16=new Int16Array(bytes.buffer);
+  let f32=new Float32Array(int16.length);
+  for(let i=0;i<int16.length;i++) f32[i]=int16[i]/32768;
+
+  // Supertonic chunks often contain leading/trailing silence.
+  // Trim it and add tiny fades so boundaries do not sound like abrupt stutters.
+  f32 = trimAndFadePcm(f32, streamSampleRate);
+
+  const buf=audioCtx.createBuffer(1,f32.length,streamSampleRate);
+  buf.getChannelData(0).set(f32);
+  const src=audioCtx.createBufferSource();
+  src.buffer=buf;
+
+  const gain=audioCtx.createGain();
+  gain.gain.value=1.0;
+  src.connect(gain);
+  gain.connect(audioCtx.destination);
+  if(analyser) gain.connect(analyser);
+
+  // Keep a tiny overlap/lead instead of accidental dead gaps.
+  const startAt=Math.max(streamNextTime - 0.006, audioCtx.currentTime + 0.010);
+  src.start(startAt);
+  streamNextTime=startAt+buf.duration;
+  streamSources.push(src);
+  src.onended=()=>{ const idx=streamSources.indexOf(src); if(idx>=0) streamSources.splice(idx,1); };
+}
+
+$('cameraToggle').onclick = async()=>{ await startMediaIfNeeded(); cameraEnabled=!cameraEnabled; $('cameraToggle').classList.toggle('active',cameraEnabled); $('cameraToggle').textContent=cameraEnabled?'Camera On':'Camera Off'; $('cameraVideo').style.opacity=cameraEnabled?1:.25; };
+$('screenShareBtn').onclick = startScreenShare; $('screenReplaceBtn').onclick = async()=>{ stopScreenShare(); await startScreenShare(); }; $('screenRemoveBtn').onclick = stopScreenShare; $('screenSendToggle').onclick=()=>{ screenSending=!screenSending; $('screenSendToggle').classList.toggle('active',screenSending); $('screenSendToggle').textContent=screenSending?'Screen On':'Screen Off'; updateLiveLabels(); };
+async function startScreenShare(){ try{ screenStream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:{ideal:30,max:60}},audio:false}); $('screenVideo').srcObject=screenStream; $('screenVideo').style.display='block'; $('screenEmpty').style.display='none'; $('screenActions').style.display='flex'; $('screenBottom').style.display='flex'; screenSending=true; $('screenSendToggle').classList.add('active'); $('screenSendToggle').textContent='Screen On'; screenStream.getVideoTracks()[0]?.addEventListener('ended', stopScreenShare); restartLiveFrameRecorder(); if(appSettings.startAutoWithScreen) await setAutoMic(true); }catch(e){ console.warn(e); } }
+function stopScreenShare(){ screenStream?.getTracks().forEach(t=>t.stop()); screenStream=null; liveFrameBuffers.screen=[]; $('screenVideo').srcObject=null; $('screenVideo').style.display='none'; $('screenEmpty').style.display='flex'; $('screenActions').style.display='none'; $('screenBottom').style.display='none'; updateLiveLabels(); }
+function pickFile(accept, cb, multiple=false){ const input=document.createElement('input'); input.type='file'; input.accept=accept; input.multiple=!!multiple; input.onchange=()=>{ if(input.files?.length) cb(multiple ? input.files : input.files[0]); }; input.click(); }
+$('pdfUploadBtn').onclick=()=>pickFile('application/pdf', loadPdf); $('pdfReplaceBtn').onclick=()=>pickFile('application/pdf', loadPdf); $('pdfRemoveBtn').onclick=removePdf; $('pdfPrevBtn').onclick=()=>changePdfPage(-1); $('pdfNextBtn').onclick=()=>changePdfPage(1); $('pdfSendToggle').onclick=()=>{ pdfSending=!pdfSending; $('pdfSendToggle').classList.toggle('active',pdfSending); $('pdfSendToggle').textContent=pdfSending?'PDF On':'PDF Off'; };
+async function loadPdf(file){
+  try{
+    const pdfjs = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.mjs');
+    pdfjs.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.mjs';
+    const bytes=await file.arrayBuffer(); pdfDoc=await pdfjs.getDocument({data:bytes}).promise; pdfPageCount=pdfDoc.numPages; pdfPage=1; await renderPdfPage();
+    $('pdfCanvas').style.display='block'; $('pdfEmpty').style.display='none'; $('pdfActions').style.display='flex'; $('pdfBottom').style.display='flex'; pdfSending=true; $('pdfSendToggle').classList.add('active'); $('pdfSendToggle').textContent='PDF On';
+  } catch(e){ alert('PDF не загрузился: '+e.message); }
+}
+async function renderPdfPage(){ if(!pdfDoc) return; try{ pdfRenderTask?.cancel?.(); }catch{} const page=await pdfDoc.getPage(pdfPage); const viewport=page.getViewport({scale:1.45}); const c=$('pdfCanvas'); c.width=viewport.width; c.height=viewport.height; const ctx=c.getContext('2d'); pdfRenderTask=page.render({canvasContext:ctx,viewport}); await pdfRenderTask.promise.catch(()=>{}); $('pdfPageLabel').textContent=`${pdfPage}/${pdfPageCount}`; }
+function changePdfPage(d){ if(!pdfDoc) return; pdfPage=Math.max(1,Math.min(pdfPageCount,pdfPage+d)); renderPdfPage(); }
+function removePdf(){ try{pdfDoc?.destroy?.();}catch{} pdfDoc=null; pdfPage=1; pdfPageCount=0; $('pdfCanvas').style.display='none'; $('pdfEmpty').style.display='flex'; $('pdfActions').style.display='none'; $('pdfBottom').style.display='none'; }
+$('videoUploadBtn').onclick=()=>pickFile('video/*', loadVideo); $('videoReplaceBtn').onclick=()=>pickFile('video/*', loadVideo); $('videoRemoveBtn').onclick=removeVideo; $('videoSendToggle').onclick=()=>{ videoSending=!videoSending; $('videoSendToggle').classList.toggle('active',videoSending); $('videoSendToggle').textContent=videoSending?'Video On':'Video Off'; };
+function loadVideo(file){ if(videoObjectUrl) URL.revokeObjectURL(videoObjectUrl); videoObjectUrl=URL.createObjectURL(file); $('fileVideo').src=videoObjectUrl; $('fileVideo').style.display='block'; $('videoFileName').textContent=file.name; $('videoEmpty').style.display='none'; $('videoActions').style.display='flex'; $('videoBottom').style.display='flex'; videoSending=true; $('videoSendToggle').classList.add('active'); $('videoSendToggle').textContent='Video On'; liveFrameBuffers.video=[]; restartLiveFrameRecorder(); }
+function removeVideo(){ if(videoObjectUrl) URL.revokeObjectURL(videoObjectUrl); videoObjectUrl=null; liveFrameBuffers.video=[]; $('fileVideo').removeAttribute('src'); $('fileVideo').load(); $('fileVideo').style.display='none'; $('videoEmpty').style.display='flex'; $('videoActions').style.display='none'; $('videoBottom').style.display='none'; updateLiveLabels(); }
+
+$('imageUploadBtn')?.addEventListener('click',()=>pickFile('image/*', loadImages, true));
+$('imageReplaceBtn')?.addEventListener('click',()=>pickFile('image/*', loadImages, true));
+$('imageRemoveBtn')?.addEventListener('click',removeImages);
+$('imageSendToggle')?.addEventListener('click',()=>{ imageSending=!imageSending; $('imageSendToggle').classList.toggle('active',imageSending); $('imageSendToggle').textContent=imageSending?'Images On':'Images Off'; updateLiveLabels(); });
+async function loadImages(fileList){
+  const files = Array.from(fileList instanceof FileList ? fileList : [fileList]).filter(f=>f && f.type && f.type.startsWith('image/'));
+  if(!files.length) return;
+  for(const u of imageObjectUrls) URL.revokeObjectURL(u);
+  imageObjectUrls=[]; uploadedImages=[]; currentImageIndex=0;
+  for(const f of files.slice(0,8)){
+    const url=URL.createObjectURL(f); imageObjectUrls.push(url);
+    const blob=await resizeImageBlobFromUrl(url, Number(appSettings?.imageMax||640), .82);
+    if(blob) uploadedImages.push(blob);
+  }
+  if(imageObjectUrls[0]){ $('imagePreview').src=imageObjectUrls[0]; $('imagePreview').style.display='block'; }
+  $('imageFileName').textContent = files.length === 1 ? files[0].name : `${files.length} images`;
+  $('imageEmpty').style.display='none'; $('imageActions').style.display='flex'; $('imageBottom').style.display='flex';
+  imageSending=true; $('imageSendToggle').classList.add('active'); $('imageSendToggle').textContent='Images On'; updateLiveLabels();
+}
+function removeImages(){ for(const u of imageObjectUrls) URL.revokeObjectURL(u); imageObjectUrls=[]; uploadedImages=[]; currentImageIndex=0; $('imagePreview').removeAttribute('src'); $('imagePreview').style.display='none'; $('imageEmpty').style.display='flex'; $('imageActions').style.display='none'; $('imageBottom').style.display='none'; updateLiveLabels(); }
+
+
+function drawWave(){ const c=$('waveform'), ctx=c.getContext('2d'), r=c.getBoundingClientRect(), dpr=window.devicePixelRatio||1; if(c.width!==Math.round(r.width*dpr)){ c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); } ctx.clearRect(0,0,r.width,r.height); const bars=16,gap=2,bw=(r.width-(bars-1)*gap)/bars,[color]=stateColors[state]||stateColors.loading; ctx.fillStyle=color; let data=null; if(analyser){ data=new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(data); } for(let i=0;i<bars;i++){ let amp=.05+Math.sin(Date.now()/450+i*.65)*.025; if(data) amp=Math.max(amp,data[Math.floor(i/bars*data.length*.6)]/255); const h=Math.max(2,amp*(r.height-4)); const x=i*(bw+gap), y=(r.height-h)/2; ctx.globalAlpha=.35+amp*.65; ctx.beginPath(); ctx.roundRect(x,y,bw,h,Math.min(3,bw/2,h/2)); ctx.fill(); } ctx.globalAlpha=1; requestAnimationFrame(drawWave); }
+function initSplit(){ const main=$('main'), split=$('split'); if(!split) return; split.addEventListener('pointerdown',e=>{ splitDragging=true; split.setPointerCapture(e.pointerId); }); window.addEventListener('pointerup',()=>splitDragging=false); window.addEventListener('pointermove',e=>{ if(!splitDragging || window.innerWidth<981) return; const rect=main.getBoundingClientRect(); const ratio=(e.clientX-rect.left)/rect.width; const left=Math.max(.32, Math.min(.72, ratio)); main.style.gridTemplateColumns=`minmax(330px, ${left}fr) 10px minmax(420px, ${1-left}fr)`; }); }
+
+
+// ── v17 overrides: chats save, message controls, replay/continue/regenerate, better live barge-in ──
+function getMessageById(id){ return messages.find(x=>x.id===id); }
+function historyFromList(list){
+  return list.filter(m=>!m.pending && (m.role==='user'||m.role==='assistant') && textOfMessage(m)).map(m=>({role:m.role,text:textOfMessage(m)}));
+}
+function buildHistoryUntilIndex(endExclusive){
+  return historyFromList(messages.slice(0, Math.max(0, endExclusive)));
+}
+function previousUserMessageIndex(idx){
+  for(let i=idx-1;i>=0;i--) if(messages[i].role==='user' && textOfMessage(messages[i])) return i;
+  return -1;
+}
+function replayAssistantMessage(id){
+  const m=getMessageById(id);
+  if(!m) return;
+  const cached = messageAudioCache.get(id) || (Array.isArray(m.audioChunks) && m.audioChunks.length ? {chunks:m.audioChunks, sampleRate:m.audioSampleRate||24000} : null);
+  if(cached && cached.chunks && cached.chunks.length){
+    streamSampleRate = cached.sampleRate || 24000;
+    startStreamPlayback();
+    for(const chunk of cached.chunks) queueAudioChunk(chunk);
+    return;
+  }
+
+  const text = textOfMessage(m);
+  if(!text) return;
+  if(ttsMode() === 'browser' && browserTtsSupported()){
+    stopBrowserTts();
+    browserTtsBuffer = text;
+    enqueueBrowserTts('', {force:true});
+    return;
+  }
+  if(ws && ws.readyState === WebSocket.OPEN){
+    const requestId = `tts-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    replayTargets.set(requestId, id);
+    ws.send(JSON.stringify({type:'tts', request_id:requestId, chat_id:activeChatId, text, voice: appSettings.voice || '', tts_engine: appSettings.ttsEngine || 'supertonic', silero_speaker: appSettings.sileroSpeaker || 'baya', silero_speed: Number(appSettings.sileroSpeed || 1.0)}));
+    setStatus('processing','TTS replay');
+  } else if('speechSynthesis' in window){
+    speechSynthesis.cancel();
+    speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+  }
+}
+function continueAssistantMessage(id){
+  const idx = messages.findIndex(m=>m.id===id); if(idx<0) return;
+  const hist = buildHistoryUntilIndex(idx+1);
+  sendPayload({text:'Продолжи предыдущий ответ с того места, где остановился. Не повторяй начало.', historyOverride: hist, suppressUserEcho:true});
+}
+function regenerateAssistantMessage(id){
+  const idx = messages.findIndex(m=>m.id===id); if(idx<0) return;
+  const userIdx = previousUserMessageIndex(idx);
+  if(userIdx < 0) return;
+  const promptText = textOfMessage(messages[userIdx]);
+  const hist = buildHistoryUntilIndex(userIdx);
+  sendPayload({text:promptText, historyOverride: hist, suppressUserEcho:true, replaceAssistantId:id});
+}
+function requestInterrupt(fromVoice=false){
+  const rid = activeRequestId || currentAudioRequestId || null;
+
+  // Hard client-side cancel: server may still send already generated chunks.
+  // Mark BOTH text and audio request ids as ignored before stopping playback.
+  if(activeRequestId){
+    ignoredTextRequests.add(activeRequestId);
+    ignoredAudioRequests.add(activeRequestId);
+  }
+  if(currentAudioRequestId){
+    ignoredTextRequests.add(currentAudioRequestId);
+    ignoredAudioRequests.add(currentAudioRequestId);
+  }
+  if(rid){
+    ignoredTextRequests.add(rid);
+    ignoredAudioRequests.add(rid);
+  }
+
+  try{ if(ws && ws.readyState===1) ws.send(JSON.stringify({type:'interrupt', chat_id:activeChatId, request_id: rid, reason: fromVoice ? 'barge_in' : 'manual'})); }catch{}
+
+  stopPlayback({clearRequest:true});
+  activeRequestId = null;
+  currentAudioRequestId = null;
+  currentAudioMessageId = null;
+  activeAssistantId = null;
+  ttsEchoActive = false;
+  speechTranscript = '';
+  clearAutoSttDraft();
+
+  if(fromVoice){
+    setState('listening');
+    setStatus('connected','Interrupted · listening');
+    if(autoMicEnabled){
+      autoSttSending=false;
+      autoSttSendingAt=0;
+      restartBrowserSttSoon(120);
+    }
+  } else {
+    setState('listening');
+    setStatus('connected','Interrupted');
+  }
+}
+renderMessages = function(){
+  const box = $('messages'); box.innerHTML = '';
+  for (const m of messages) {
+    const div = document.createElement('div');
+    div.className = `msg ${m.role}${m.pending?' pending':''}`;
+    div.dataset.id = m.id;
+    const body = m.pending ? '<span class="loading-dots"><span></span><span></span><span></span></span>' : escapeHtml(m.text);
+    const meta = m.meta ? `<div class="meta">${escapeHtml(m.meta)}</div>` : '';
+    let actions = `<button class="msg-action edit" title="edit">✎</button><button class="msg-action del" title="delete">×</button>`;
+    if(m.role === 'assistant'){
+      const canReplay = !!textOfMessage(m);
+      actions = `<button class="msg-action replay" title="listen again" ${canReplay?'':'disabled'}>🔊</button><button class="msg-action cont" title="continue">▶</button><button class="msg-action regen" title="regenerate">↻</button>` + actions;
+    }
+    div.innerHTML = `<div class="msg-actions">${actions}</div><div class="msg-body">${body}</div>${meta}`;
+    box.appendChild(div);
+  }
+  $('transcript').scrollTop = $('transcript').scrollHeight;
+  saveActiveChat();
+};
+addMessage = function(role, text, meta='', pending=false){ const m={id:nowId(),role,text,meta,pending,audioChunks:[],audioSampleRate:0}; messages.push(m); renderMessages(); return m.id; };
+updateMessage = function(id, patch){ const m=messages.find(x=>x.id===id); if(m){ Object.assign(m,patch); renderMessages(); } };
+deleteMessage = function(id){ messages = messages.filter(m => m.id !== id); renderMessages(); };
+editMessage = function(id){ const m=messages.find(x=>x.id===id); if(!m) return; const next = prompt('Редактировать сообщение:', m.text || ''); if(next!==null){ m.text = next; m.pending=false; renderMessages(); } };
+historyForServer = function(){ const n=Math.max(2, Math.min(200, Number(appSettings.historyMessages||64))); return messages.filter(m=>!m.pending && (m.role==='user'||m.role==='assistant') && textOfMessage(m)).slice(-n).map(m=>({role:m.role,text:textOfMessage(m)})); };
+$('messages').onclick = (e)=>{ const btn=e.target.closest('button'); if(!btn) return; const id=Number(e.target.closest('.msg')?.dataset.id); if(!id) return; if(btn.classList.contains('del')) deleteMessage(id); else if(btn.classList.contains('edit')) editMessage(id); else if(btn.classList.contains('replay')) replayAssistantMessage(id); else if(btn.classList.contains('cont')) continueAssistantMessage(id); else if(btn.classList.contains('regen')) regenerateAssistantMessage(id); };
+
+startMedia = async function(){
+  if(mediaStream && mediaStream.getTracks().length) return;
+  const tracks = [];
+  let gotVideo = false, gotAudio = false;
+  try {
+    const a = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    a.getAudioTracks().forEach(t=>tracks.push(t)); gotAudio = true;
+  } catch(e) { console.warn('audio failed', e?.message || e); }
+  try {
+    const v = await navigator.mediaDevices.getUserMedia({video:{width:960,height:540,facingMode:'user'}});
+    v.getVideoTracks().forEach(t=>tracks.push(t)); gotVideo = true;
+  } catch(e) { console.warn('video failed', e?.message || e); }
+  mediaStream = new MediaStream(tracks);
+  if(gotVideo){ $('cameraVideo').srcObject = mediaStream; cameraEnabled = true; $('cameraToggle').textContent='Camera On'; $('cameraToggle').classList.add('active'); }
+  else { cameraEnabled = false; $('cameraToggle').textContent = 'No Camera'; $('cameraToggle').classList.remove('active'); }
+  if(!gotAudio) console.warn('Microphone is unavailable or permission was denied');
+};
+
+sendPayload = function({text='', audio=null, transcript='', historyOverride=null, suppressUserEcho=false, replaceAssistantId=null}={}){
+  if(!ws || ws.readyState!==WebSocket.OPEN){
+    console.warn('WS not open; dropped request');
+    setStatus('disconnected','Disconnected');
+    return;
+  }
+
+  const hist = Array.isArray(historyOverride) ? historyOverride : historyForServer();
+  const spokenText = (transcript || '').trim();
+  const micModeRaw = appSettings.audioInputMode || (Number(appSettings.sendRawAudio || 0) ? 'native' : 'stt');
+  const micMode = ['stt','native','hybrid'].includes(micModeRaw) ? micModeRaw : 'stt';
+  const hasAudio = !!audio;
+
+  let outgoingText = '';
+  if(text) outgoingText = String(text).trim();
+  else if(hasAudio && micMode === 'native') outgoingText = '';
+  else outgoingText = spokenText;
+
+  const attachRawAudio = hasAudio && (
+    micMode === 'native' ||
+    micMode === 'hybrid' ||
+    (!outgoingText && !spokenText)
+  );
+
+  if(!outgoingText && !attachRawAudio){
+    console.warn('Dropped voice event: no STT text and raw audio is disabled', {micMode, hasAudio});
+    setState('listening');
+    setStatus('connected','Connected');
+    return;
+  }
+
+  if((activeRequestId || currentAudioRequestId || streamSources.length || ttsPendingAudioChunks.length || ttsPlaybackStarted || state === 'speaking') && !replaceAssistantId){
+    requestInterrupt(false);
+  }
+
+  const wantsVision = visualIntent(outgoingText);
+  const visionMode = appSettings.visionMode || 'auto';
+  const useVision = visionMode === 'always' || (visionMode === 'auto' && wantsVision);
+  const includeCamera = useVision && (Number(appSettings.attachCameraAlways || 0) === 1 || wantsVision);
+  const frames = useVision ? collectFrameSequence({
+    includeScreen: true,
+    includeVideo: wantsVision,
+    includePdf: wantsVision,
+    includeCamera,
+  }) : [];
+  const images = useVision ? collectUploadedImages() : [];
+  const used = [...new Set([...frames.map(x=>x.source), ...images.map(x=>x.source)])].join(' · ');
+  activeRequestId = `r-${Date.now()}`;
+
+  if(!suppressUserEcho){
+    if(outgoingText) {
+      const meta = text ? (used ? `with ${used}` : '') : (attachRawAudio ? `voice/${micMode}${used ? ' · ' + used : ''}` : (used ? `voice/STT · ${used}` : 'voice/STT'));
+      addMessage('user', outgoingText, meta);
+      maybeTitleChat(outgoingText);
+    } else if(attachRawAudio) {
+      addMessage('user','', used ? `voice/${micMode} · ${used}` : `voice/${micMode}`, true);
+    } else if(frames.length || images.length) {
+      addMessage('user','посмотри вложения', used ? `with ${used}` : 'with image');
+    }
+  }
+
+  stopBrowserTts();
+  browserTtsBuffer = '';
+  browserTtsQueue = [];
+  if(replaceAssistantId){
+    activeAssistantId = replaceAssistantId;
+    updateMessage(replaceAssistantId,{text:'', meta:'', pending:true, audioChunks:[], audioSampleRate:0});
+  } else {
+    activeAssistantId = addMessage('assistant','', '', true);
+  }
+
+  const audioSeconds = attachRawAudio && audio ? estimateWavSecondsFromBase64(audio) : 0;
+  console.debug('[TX USER TURN]', {
+    requestId: activeRequestId,
+    micMode,
+    hasAudio,
+    attachRawAudio,
+    outgoingTextLen: outgoingText.length,
+    transcriptLen: spokenText.length,
+    audioB64Len: attachRawAudio && audio ? audio.length : 0,
+    audioSeconds
+  });
+
+  setState('processing');
+  setStatus('processing', attachRawAudio ? `Processing voice/${micMode}` : 'Processing');
+
+  ws.send(JSON.stringify({
+    type: outgoingText ? 'text' : (attachRawAudio ? 'audio' : 'image'),
+    request_id: activeRequestId,
+    chat_id: activeChatId,
+    text: outgoingText,
+    transcription: spokenText,
+    audio: attachRawAudio ? audio : null,
+    audio_mode: micMode,
+    audio_seconds: audioSeconds,
+    frames,
+    images,
+    lang:'ru',
+    voice: appSettings.voice || '',
+    system_prompt:$('systemPrompt').value || '',
+    history: hist,
+    settings:{
+      temperature:Number(appSettings.temperature),
+      top_p:Number(appSettings.top_p),
+      top_k:Number(appSettings.top_k),
+      max_output_tokens:Number(appSettings.max_output_tokens),
+      enable_thinking:false,
+      tts_mode:ttsMode(),
+      tts_engine:appSettings.ttsEngine||'supertonic',
+      voice:appSettings.voice||'',
+      silero_speaker:appSettings.sileroSpeaker||'baya',
+      silero_speed:Number(appSettings.sileroSpeed||1.0),
+      audio_input_mode: micMode
+    }
+  }));
+};
+$('chatsBtn')?.addEventListener('click', openChats);
+$('closeChatsBtn')?.addEventListener('click', closeChats);
+$('drawerBackdrop')?.addEventListener('click', closeChats);
+$('newChatBtn')?.addEventListener('click', ()=>{ const c=createChatRecord('Новый чат'); activeChatId=c.id; localStorage.setItem(ACTIVE_CHAT_KEY, activeChatId); loadActiveChat(); closeChats(); });
+$('renameChatBtn')?.addEventListener('click', ()=>{ const c=currentChat(); const name=prompt('Название чата:', c.title||''); if(name!==null && name.trim()){ c.title=name.trim(); c.updatedAt=Date.now(); persistChats(); renderChatList(); } });
+$('deleteChatBtn')?.addEventListener('click', ()=>{ if(chats.length<=1){ messages=[]; currentChat().messages=[]; renderMessages(); return; } const c=currentChat(); if(confirm(`Удалить чат «${c.title||'Новый чат'}»?`)){ chats=chats.filter(x=>x.id!==activeChatId); activeChatId=chats[0].id; localStorage.setItem(ACTIVE_CHAT_KEY, activeChatId); persistChats(); loadActiveChat(); closeChats(); } });
+$('settingsBtn')?.addEventListener('click', openSettings);
+$('closeSettingsBtn')?.addEventListener('click', closeSettings);
+$('settingsBackdrop')?.addEventListener('click', closeSettings);
+$('cancelSettingsBtn')?.addEventListener('click', closeSettings);
+$('saveSettingsBtn')?.addEventListener('click', ()=>{ const oldWs=getActiveWsUrl(); readSettingsForm(); closeSettings(); if(getActiveWsUrl()!==oldWs){ try{ ws?.close(); }catch{} connect(); } });
+$('resetSettingsBtn')?.addEventListener('click', ()=>{ appSettings={...DEFAULT_SETTINGS}; saveSettings(); fillSettingsForm(); });
+$('systemPrompt')?.addEventListener('input', saveActiveChat);
+
+const oldReset = $('resetBtn').onclick;
+$('resetBtn').onclick = () => { messages=[]; currentChat().messages=[]; renderMessages(); activeAssistantId=null; if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:'reset', chat_id:activeChatId})); stopPlayback(); setState('listening'); };
+
+(async function init(){ setState('loading'); loadActiveChat(); await startMedia(); connect(); initSplit(); drawWave(); restartLiveFrameRecorder(); updateAutoMicUI(); if(appSettings.autoVoice) setTimeout(()=>setAutoMic(true), 700); setTimeout(()=>{ setState('listening'); if(autoMicEnabled) ensureAutoMicListening(); },500); })();
+</script>
+</body>
+</html>

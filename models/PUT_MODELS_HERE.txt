@@ -1,0 +1,22 @@
+Put local model files here. Do not commit them.
+
+Needed:
+- main model: *.gguf
+- multimodal projector: mmproj*.gguf
+
+Examples used by run_llama*.bat:
+- gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf
+- mmproj-F16-gemma-4-E2B-it-qat.gguf
+- gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf
+- mmproj-F16-gemma-4-E4B-it-qat.gguf
+- gemma-4-12B-it-qat-UD-Q4_K_XL.gguf
+- mmproj-F16-gemma-4-12B-it-qat.gguf
+
+Do not push:
+- *.gguf
+- *.pt
+- *.bin
+- *.safetensors
+- models\.hf_cache
+- models\.torch
+- models\supertonic3
