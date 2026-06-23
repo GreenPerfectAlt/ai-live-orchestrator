@@ -1,5 +1,7 @@
 # AI Live Orchestrator
 
+[AI Flashcard Studio Canvas Preview](image.jpg)
+
 Local multimodal voice AI app for Windows.
 
 Runs a local Gemma/GGUF model through `llama.cpp` and provides:
