@@ -307,10 +307,8 @@ This project is licensed under Apache License 2.0.
 
 See:
 
- ```text 
- [Apache 2.0](LICENSE)
-```
-
 The original Parlor project is also licensed under Apache License 2.0.
+
+ [Apache 2.0](LICENSE)
 
 This repository keeps attribution and documents major modifications.
