@@ -1,6 +1,6 @@
 # AI Live Orchestrator
 
-[AI Flashcard Studio Canvas Preview](image.jpg)
+![AI Flashcard Studio Canvas Preview](image.jpg)
 
 Local multimodal voice AI app for Windows.
 
