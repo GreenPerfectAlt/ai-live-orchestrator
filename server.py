@@ -1,5 +1,5 @@
 """
-Parlor Jarvis v14 — llama.cpp-only local voice/text/vision chat.
+Ai-Live-Orchestrator — llama.cpp-only local voice/text/vision chat.
 
 The browser can attach camera/screen/PDF/video frames to each text or voice turn.
 This build talks only to llama-server /v1/chat/completions.
@@ -240,6 +240,83 @@ def get_tts_backend(engine: str = "supertonic", settings: dict[str, Any] | None 
             tts_backends["supertonic"] = backend
             tts_backend = backend
         return backend
+
+# ── Server-side STT (faster-whisper) — транскрипция для native-аудио ──
+# Переменные берутся из .bat (STT_ENGINE/STT_MODEL/...). Если faster_whisper
+# не установлен — сервер работает как раньше, просто без текста в native-пузыре.
+STT_ENGINE = os.environ.get("STT_ENGINE", "faster_whisper").strip().lower()
+STT_MODEL = os.environ.get("STT_MODEL", "small").strip() or "small"
+STT_LANG = os.environ.get("STT_LANG", "ru").strip() or None
+STT_COMPUTE_TYPE = os.environ.get("STT_COMPUTE_TYPE", "int8").strip() or "int8"
+STT_BEAM_SIZE = int(os.environ.get("STT_BEAM_SIZE", "3"))
+STT_VAD_ENABLE = os.environ.get("STT_VAD_ENABLE", "1").strip().lower() in {"1", "true", "yes", "on"}
+STT_DEVICE = os.environ.get("STT_DEVICE", "cpu").strip() or "cpu"
+STT_THREADS = int(os.environ.get("STT_THREADS", "2"))
+
+_whisper_model = None
+_whisper_lock = threading.Lock()
+_whisper_tried = False
+
+
+def _get_whisper():
+    """Ленивая загрузка faster-whisper. При ошибке — None (graceful degradation)."""
+    global _whisper_model, _whisper_tried
+    if STT_ENGINE != "faster_whisper":
+        return None
+    if _whisper_model is not None:
+        return _whisper_model
+    with _whisper_lock:
+        if _whisper_model is not None:
+            return _whisper_model
+        if _whisper_tried:
+            return None
+        _whisper_tried = True
+        try:
+            from faster_whisper import WhisperModel
+            print(f"🎙 Loading server STT: faster-whisper model={STT_MODEL}, device={STT_DEVICE}, compute={STT_COMPUTE_TYPE}")
+            _whisper_model = WhisperModel(STT_MODEL, device=STT_DEVICE, compute_type=STT_COMPUTE_TYPE, cpu_threads=max(1, STT_THREADS))
+            print("✅ Server STT ready: faster-whisper")
+            return _whisper_model
+        except Exception as exc:
+            print(f"⚠️ faster-whisper unavailable (native mode will work without chat text): {exc}")
+            return None
+
+
+def decode_wav_b64(b64: str):
+    """base64 WAV (16kHz int16 mono от фронта) → float32 numpy."""
+    try:
+        raw = base64.b64decode(b64)
+        idx = raw.find(b"data")
+        if idx < 0 or idx + 8 > len(raw):
+            return None
+        size = int.from_bytes(raw[idx + 4:idx + 8], "little")
+        pcm = raw[idx + 8:idx + 8 + size]
+        audio = np.frombuffer(pcm, dtype=np.int16).astype(np.float32) / 32768.0
+        return audio if audio.size else None
+    except Exception as exc:
+        audio_log("wav_decode_failed", err=str(exc))
+        return None
+
+
+def transcribe_audio(audio_f32) -> str:
+    model = _get_whisper()
+    if model is None or audio_f32 is None or audio_f32.size < 3200:  # <0.2s — игнор
+        return ""
+    try:
+        with _whisper_lock:
+            segments, _info = model.transcribe(
+                audio_f32,
+                language=STT_LANG,
+                beam_size=max(1, STT_BEAM_SIZE),
+                vad_filter=STT_VAD_ENABLE,
+                condition_on_previous_text=False,
+            )
+            text = " ".join(seg.text for seg in segments).strip()
+        return text
+    except Exception as exc:
+        audio_log("whisper_transcribe_failed", err=str(exc))
+        return ""
+
 
 
 def normalize_sampler(settings: dict[str, Any] | None) -> dict[str, Any]:
@@ -706,17 +783,22 @@ def data_uri_from_base64(data: str, mime: str) -> str:
         return data
     return f"data:{mime};base64,{data}"
 
-
 def make_llama_user_content(msg: dict[str, Any], user_text: str) -> list[dict[str, Any]]:
     parts: list[dict[str, Any]] = []
     has_audio = bool(msg.get("audio"))
     image_infos = extract_image_infos(msg)
     has_image = bool(image_infos)
 
+    if has_audio and LLAMA_ENABLE_AUDIO:                 # ← нативный слух Gemma 4
+        parts.append({
+            "type": "input_audio",
+            "input_audio": {"data": msg["audio"], "format": "wav"},
+        })
+
     if user_text:
         prompt_text = user_text.strip()
     elif has_audio:
-        prompt_text = "Пользователь отправил голосовое сообщение. Ответь на него."
+        prompt_text = "Прослушай аудио пользователя и ответь на него."
     elif has_image:
         prompt_text = "Посмотри на изображение и ответь на запрос."
     else:
@@ -725,13 +807,8 @@ def make_llama_user_content(msg: dict[str, Any], user_text: str) -> list[dict[st
 
     if has_image and LLAMA_ENABLE_IMAGES:
         for info in image_infos:
-            parts.append({
-                "type": "image_url",
-                "image_url": {"url": data_uri_from_base64(info["blob"], "image/jpeg")},
-            })
-
+            parts.append({"type": "image_url", "image_url": {"url": data_uri_from_base64(info["blob"], "image/jpeg")}})
     return parts
-
 
 def normalize_client_history(msg: dict[str, Any]) -> list[dict[str, str]]:
     raw = msg.get("history")
@@ -925,7 +1002,9 @@ async def websocket_endpoint(ws: WebSocket):
                 try:
                     ensure_llama_model(msg.get("llama_model_path") or msg.get("model_path"), msg.get("llama_mmproj_path") or msg.get("mmproj_path"))
                     messages = build_llama_messages(llama_session, system_prompt, msg, user_text)
-                    if TEXT_STREAMING and LLAMA_STREAMING:
+                    has_audio_input = bool(msg.get("audio"))
+                    use_stream = TEXT_STREAMING and LLAMA_STREAMING and not has_audio_input
+                    if use_stream:
                         for piece in llama_chat_stream(messages, sampler):
                             if piece:
                                 loop.call_soon_threadsafe(llm_queue.put_nowait, piece)
@@ -939,7 +1018,7 @@ async def websocket_endpoint(ws: WebSocket):
                     loop.call_soon_threadsafe(llm_queue.put_nowait, None)
 
             threading.Thread(target=stream_worker, daemon=True).start()
-
+            
             audio_started = False
             sentence_index = 0
             tts_total_time = 0.0
@@ -993,6 +1072,20 @@ async def websocket_endpoint(ws: WebSocket):
                     sentence_index += 1
 
             tts_task = asyncio.create_task(tts_worker())
+
+            # Native-аудио: фронт текст НЕ прислал → транскрибируем whisper'ом параллельно
+            # генерации ответа и шлём текст в пузырь пользователя отдельным сообщением.
+            if (not user_text) and msg.get("audio") and LLAMA_ENABLE_AUDIO:
+                async def whisper_worker():
+                    try:
+                        audio = await loop.run_in_executor(None, lambda: decode_wav_b64(msg["audio"]))
+                        txt = await loop.run_in_executor(None, lambda: transcribe_audio(audio))
+                        if txt and not request_cancelled(request_id):
+                            await ws.send_text(json.dumps({"type": "transcription", "request_id": request_id, "text": txt}, ensure_ascii=False))
+                    except Exception as exc:
+                        audio_log("whisper_worker_failed", err=str(exc))
+                asyncio.create_task(whisper_worker())
+
             visible_text = ""
             sentence_buffer = ""
             seen_text_sentences: set[str] = set()
