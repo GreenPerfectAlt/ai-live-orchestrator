@@ -1,8 +1,9 @@
 """
 Ai-Live-Orchestrator — llama.cpp-only local voice/text/vision chat.
-
 The browser can attach camera/screen/PDF/video frames to each text or voice turn.
 This build talks only to llama-server /v1/chat/completions.
+Thinking/reasoning отключён полностью; strip_thinking_and_controls страхует от
+случайных thought-тегов в выводе модели.
 """
 from __future__ import annotations
 
@@ -25,6 +26,7 @@ from pathlib import Path
 from typing import Any, Iterator
 
 import numpy as np
+
 try:
     import tts
     TTS_SUPERTONIC_IMPORT_ERROR = None
@@ -37,6 +39,7 @@ try:
 except Exception as exc:
     tts_silero = None
     TTS_SILERO_IMPORT_ERROR = exc
+
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
@@ -70,6 +73,7 @@ LLAMA_ENABLE_AUDIO = os.environ.get("LLAMA_ENABLE_AUDIO", "1").strip().lower() n
 LLAMA_SEND_AUDIO_WITH_STT = os.environ.get("LLAMA_SEND_AUDIO_WITH_STT", "0").strip().lower() in {"1", "true", "yes", "on"}
 AUDIO_DEBUG = os.environ.get("PARLOR_AUDIO_DEBUG", "1").strip().lower() in {"1", "true", "yes", "on"}
 
+
 def audio_log(event: str, **kwargs):
     if not AUDIO_DEBUG:
         return
@@ -78,6 +82,7 @@ def audio_log(event: str, **kwargs):
         print("[VOICE] " + json.dumps(payload, ensure_ascii=False), flush=True)
     except Exception as exc:
         print(f"[VOICE] log failed: {exc}", flush=True)
+
 
 TTS_STREAMING = os.environ.get("TTS_STREAMING", "1").strip().lower() not in {"0", "false", "no", "off"}
 TTS_EARLY_CHARS = int(os.environ.get("TTS_EARLY_CHARS", "15"))
@@ -109,12 +114,14 @@ DEFAULT_SYSTEM_PROMPT = (
     "Не показывай скрытые рассуждения, thought/think/reasoning-каналы, XML/служебные теги."
 )
 
-CONTROL_TOKEN_RE = re.compile(r"<\|/?[^>\n]{0,80}?\|>|<\|[^>\n]{0,80}?\|>", re.IGNORECASE)
+# Regex'ы нужны ТОЛЬКО как страховка: вырезают thought/channel теги, если модель
+# их всё же сгенерит. Это НЕ фича «думания», а очистка мусора из ответа.
+CONTROL_TOKEN_RE = re.compile(r"<\|/?[^>\n]{0,80}?\|>", re.IGNORECASE)
 XML_CONTROL_RE = re.compile(r"</?(?:tool|tool_call|tool_response|turn|channel|assistant|model|user|system)[^>]*>", re.IGNORECASE)
 THINK_PAIR_RE = re.compile(r"<(think|thought|analysis|reasoning)\b[^>]*>.*?</\1>", re.IGNORECASE | re.DOTALL)
 THINK_OPEN_RE = re.compile(r"<(think|thought|analysis|reasoning)\b[^>]*>.*$", re.IGNORECASE | re.DOTALL)
-CHANNEL_PAIR_RE = re.compile(r"<\|channel\>\s*(?:thought|analysis|reasoning)\s*\n.*?<channel\|>", re.IGNORECASE | re.DOTALL)
-CHANNEL_OPEN_RE = re.compile(r"<\|channel\>\s*(?:thought|analysis|reasoning)\s*\n.*$", re.IGNORECASE | re.DOTALL)
+CHANNEL_PAIR_RE = re.compile(r"<\|channel>\s*(?:thought|analysis|reasoning)\b.*?<channel\|>", re.IGNORECASE | re.DOTALL)
+CHANNEL_OPEN_RE = re.compile(r"<\|channel>\s*(?:thought|analysis|reasoning)\b.*$", re.IGNORECASE | re.DOTALL)
 LABEL_RE = re.compile(r"\b(?:Транскрипция|Ответ|Assistant|Model)\s*:\s*", re.IGNORECASE)
 SPACE_RE = re.compile(r"[ \t]{2,}")
 SENTENCE_END_RE = re.compile(r"(?<=[.!?…])(?:\s+|$)|\n+")
@@ -213,7 +220,6 @@ def get_tts_backend(engine: str = "supertonic", settings: dict[str, Any] | None 
     global tts_backend
     settings = settings or {}
     engine = normalize_tts_engine(engine)
-
     if engine == "silero":
         if tts_silero is None:
             raise RuntimeError(f"Silero backend is unavailable: {TTS_SILERO_IMPORT_ERROR}")
@@ -229,7 +235,6 @@ def get_tts_backend(engine: str = "supertonic", settings: dict[str, Any] | None 
                 backend = tts_silero.load(model_id=model_id, speaker=speaker, sample_rate=sample_rate, speed=speed)
                 tts_backends[key] = backend
             return backend
-
     if tts is None:
         raise RuntimeError(f"Supertonic backend is unavailable: {TTS_SUPERTONIC_IMPORT_ERROR}")
     with tts_backend_lock:
@@ -241,9 +246,7 @@ def get_tts_backend(engine: str = "supertonic", settings: dict[str, Any] | None 
             tts_backend = backend
         return backend
 
-# ── Server-side STT (faster-whisper) — транскрипция для native-аудио ──
-# Переменные берутся из .bat (STT_ENGINE/STT_MODEL/...). Если faster_whisper
-# не установлен — сервер работает как раньше, просто без текста в native-пузыре.
+
 STT_ENGINE = os.environ.get("STT_ENGINE", "faster_whisper").strip().lower()
 STT_MODEL = os.environ.get("STT_MODEL", "small").strip() or "small"
 STT_LANG = os.environ.get("STT_LANG", "ru").strip() or None
@@ -259,7 +262,6 @@ _whisper_tried = False
 
 
 def _get_whisper():
-    """Ленивая загрузка faster-whisper. При ошибке — None (graceful degradation)."""
     global _whisper_model, _whisper_tried
     if STT_ENGINE != "faster_whisper":
         return None
@@ -283,7 +285,6 @@ def _get_whisper():
 
 
 def decode_wav_b64(b64: str):
-    """base64 WAV (16kHz int16 mono от фронта) → float32 numpy."""
     try:
         raw = base64.b64decode(b64)
         idx = raw.find(b"data")
@@ -300,23 +301,19 @@ def decode_wav_b64(b64: str):
 
 def transcribe_audio(audio_f32) -> str:
     model = _get_whisper()
-    if model is None or audio_f32 is None or audio_f32.size < 3200:  # <0.2s — игнор
+    if model is None or audio_f32 is None or audio_f32.size < 3200:
         return ""
     try:
         with _whisper_lock:
             segments, _info = model.transcribe(
-                audio_f32,
-                language=STT_LANG,
-                beam_size=max(1, STT_BEAM_SIZE),
-                vad_filter=STT_VAD_ENABLE,
-                condition_on_previous_text=False,
+                audio_f32, language=STT_LANG, beam_size=max(1, STT_BEAM_SIZE),
+                vad_filter=STT_VAD_ENABLE, condition_on_previous_text=False,
             )
             text = " ".join(seg.text for seg in segments).strip()
         return text
     except Exception as exc:
         audio_log("whisper_transcribe_failed", err=str(exc))
         return ""
-
 
 
 def normalize_sampler(settings: dict[str, Any] | None) -> dict[str, Any]:
@@ -382,22 +379,6 @@ def clean_generated_response(text: str) -> str:
     return collapse_generated_repeats(strip_thinking_and_controls(text, final=True))
 
 
-def final_tts_sentences(text: str) -> list[str]:
-    complete, tail = extract_sentences(text)
-    if tail.strip():
-        complete.append(tail.strip())
-    out: list[str] = []
-    seen: set[str] = set()
-    for sentence in complete:
-        clean = clean_generated_response(sentence)
-        key = re.sub(r"\W+", "", clean.casefold())[:240]
-        if len(clean) < 2 or key in seen:
-            continue
-        seen.add(key)
-        out.append(clean)
-    return out
-
-
 def normalize_stream_delta(chunk_text: str, emitted_text: str) -> tuple[str, str]:
     text = chunk_text or ""
     if not text:
@@ -427,11 +408,9 @@ def extract_sentences(buffer: str) -> tuple[list[str], str]:
 
 
 def extract_speak_chunks(buffer: str, *, force: bool = False, first: bool = False) -> tuple[list[str], str]:
-    """Ультра-низкая задержка: убран искусственный порог 48 символов."""
     buf = SPACE_RE.sub(" ", (buffer or "").strip())
     if not buf:
         return [], ""
-
     if TTS_SENTENCE_STREAMING:
         complete, tail = extract_sentences(buf)
         if complete:
@@ -458,38 +437,31 @@ def extract_speak_chunks(buffer: str, *, force: bool = False, first: bool = Fals
                 if tail.strip():
                     rest_parts.append(tail.strip())
                 return out, " ".join(rest_parts).strip()
-
     first_chars = max(6, int(TTS_EARLY_CHARS))
     target_chars = max(first_chars + 20, int(TTS_LONG_CHARS))
     max_chars = max(target_chars + 40, int(TTS_MAX_CHARS))
     out: list[str] = []
     threshold = first_chars if first else target_chars
     min_sentence = 8 if first else 20
-
     while len(buf) >= threshold:
         window_len = min(len(buf), max_chars)
         window = buf[:window_len]
         split_at = -1
-
         sentence_ends = [m.end() for m in SENTENCE_END_RE.finditer(window) if m.end() >= min_sentence]
         if sentence_ends:
             split_at = sentence_ends[0]
-
         if split_at < 0 and TTS_SPLIT_ON_COMMA:
             for sep in [", ", "; ", ": ", " — ", " - "]:
                 idx = window.rfind(sep, threshold, window_len)
                 if idx >= threshold:
                     split_at = idx + len(sep)
                     break
-
         if split_at < 0:
             idx = window.rfind(" ", threshold, window_len)
             if idx >= threshold:
                 split_at = idx + 1
-
         if split_at < 0:
             break
-
         chunk = sanitize_tts_text(buf[:split_at])
         if chunk:
             out.append(chunk)
@@ -497,13 +469,11 @@ def extract_speak_chunks(buffer: str, *, force: bool = False, first: bool = Fals
         threshold = target_chars
         min_sentence = 20
         first = False
-
     if force and buf:
         chunk = sanitize_tts_text(buf)
         if chunk:
             out.append(chunk)
         buf = ""
-
     return out, buf
 
 
@@ -585,13 +555,9 @@ def scan_llama_models() -> list[dict[str, Any]]:
         rel_mm = str(paired.relative_to(base)) if paired and paired.is_relative_to(base) else (str(paired) if paired else "")
         items.append({
             "id": hashlib.sha1(str(model).encode("utf-8", "ignore")).hexdigest()[:12],
-            "name": model.name,
-            "label": model.stem,
-            "path": rel_model,
-            "absolute_path": str(model),
-            "mmproj_name": paired.name if paired else "",
-            "mmproj_path": rel_mm,
-            "mmproj_absolute_path": str(paired) if paired else "",
+            "name": model.name, "label": model.stem, "path": rel_model,
+            "absolute_path": str(model), "mmproj_name": paired.name if paired else "",
+            "mmproj_path": rel_mm, "mmproj_absolute_path": str(paired) if paired else "",
         })
     return items
 
@@ -634,46 +600,36 @@ def ensure_llama_model(model_path_value: Any = None, mmproj_path_value: Any = No
     if not LLAMA_AUTO_START:
         wait_for_llama_server()
         return {"backend": "llama_cpp", "managed": False, "base_url": LLAMA_BASE_URL, "model": LLAMA_MODEL}
-
     if not str(model_path_value or "").strip():
         model_path_value, mmproj_path_value = pick_default_llama_model()
-
     model_path = resolve_model_file(model_path_value)
     mmproj_path = resolve_model_file(mmproj_path_value) if str(mmproj_path_value or "").strip() else None
     if model_path is None or not model_path.exists():
         raise RuntimeError(f"Selected GGUF model not found: {model_path_value!r}")
-
     signature = hashlib.sha1(json.dumps({
-        "model": str(model_path),
-        "mmproj": str(mmproj_path or ""),
-        "host": LLAMA_HOST,
-        "port": LLAMA_PORT,
-        "ctx": LLAMA_CTX_SIZE,
-        "threads": LLAMA_THREADS,
-        "batch": LLAMA_BATCH_SIZE,
-        "ngl": LLAMA_N_GPU_LAYERS,
-        "extra": LLAMA_EXTRA_ARGS,
+        "model": str(model_path), "mmproj": str(mmproj_path or ""), "host": LLAMA_HOST,
+        "port": LLAMA_PORT, "ctx": LLAMA_CTX_SIZE, "threads": LLAMA_THREADS,
+        "batch": LLAMA_BATCH_SIZE, "ngl": LLAMA_N_GPU_LAYERS, "extra": LLAMA_EXTRA_ARGS,
     }, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()[:16]
-
     with llama_process_lock:
         if llama_active_signature == signature and server_url_is_ready(timeout=2.0):
-            return {"backend": "llama_cpp", "managed": True, "base_url": LLAMA_BASE_URL, "model": model_path.name, "mmproj": mmproj_path.name if mmproj_path else ""}
-
+            return {"backend": "llama_cpp", "managed": True, "base_url": LLAMA_BASE_URL,
+                    "model": model_path.name, "mmproj": mmproj_path.name if mmproj_path else ""}
         stop_managed_llama_server()
-
         exe = LLAMA_SERVER_EXE.strip().strip('"') or "llama-server.exe"
         exe_path = Path(exe).expanduser()
         exe_cmd = str(exe_path) if exe_path.exists() else (shutil.which(exe) or exe)
-        cmd = [exe_cmd, "-m", str(model_path), "--host", LLAMA_HOST, "--port", str(LLAMA_PORT), "--ctx-size", str(LLAMA_CTX_SIZE), "--threads", str(LLAMA_THREADS), "--batch-size", str(LLAMA_BATCH_SIZE)]
+        cmd = [exe_cmd, "-m", str(model_path), "--host", LLAMA_HOST, "--port", str(LLAMA_PORT),
+               "--ctx-size", str(LLAMA_CTX_SIZE), "--threads", str(LLAMA_THREADS),
+               "--batch-size", str(LLAMA_BATCH_SIZE)]
         if LLAMA_N_GPU_LAYERS:
             cmd += ["-ngl", LLAMA_N_GPU_LAYERS]
         if mmproj_path:
             cmd += ["--mmproj", str(mmproj_path)]
         if LLAMA_EXTRA_ARGS:
             cmd += shlex.split(LLAMA_EXTRA_ARGS)
-
         print("🚀 launching llama-server:")
-        print("   " + " ".join(f'\"{c}\"' if " " in c else c for c in cmd))
+        print("   " + " ".join(f'"{c}"' if " " in c else c for c in cmd))
         try:
             llama_server_process = subprocess.Popen(cmd, cwd=str(Path(__file__).parent))
         except FileNotFoundError as exc:
@@ -682,7 +638,8 @@ def ensure_llama_model(model_path_value: Any = None, mmproj_path_value: Any = No
         wait_for_llama_server()
         llama_active_signature = signature
         llama_active_model_path = str(model_path)
-        return {"backend": "llama_cpp", "managed": True, "base_url": LLAMA_BASE_URL, "model": model_path.name, "mmproj": mmproj_path.name if mmproj_path else ""}
+        return {"backend": "llama_cpp", "managed": True, "base_url": LLAMA_BASE_URL,
+                "model": model_path.name, "mmproj": mmproj_path.name if mmproj_path else ""}
 
 
 def load_models() -> None:
@@ -691,7 +648,6 @@ def load_models() -> None:
     print(f"🚀 llama.cpp: {LLAMA_BASE_URL} | model={LLAMA_MODEL}")
     if not LLAMA_AUTO_START:
         wait_for_llama_server()
-
     print("🔊 TTS: Supertonic 3 + Silero RU")
     if env_bool("TTS_BACKGROUND_PRELOAD", True):
         start_tts_background_load(os.environ.get("TTS_ENGINE", "silero"), {
@@ -720,11 +676,8 @@ async def root():
 @app.get("/api/llama/models")
 async def api_llama_models():
     return {
-        "backend": LLM_BACKEND,
-        "auto_start": LLAMA_AUTO_START,
-        "models_dir": str(MODELS_DIR),
-        "base_url": LLAMA_BASE_URL,
-        "active_model_path": llama_active_model_path or "",
+        "backend": LLM_BACKEND, "auto_start": LLAMA_AUTO_START, "models_dir": str(MODELS_DIR),
+        "base_url": LLAMA_BASE_URL, "active_model_path": llama_active_model_path or "",
         "models": scan_llama_models(),
     }
 
@@ -763,17 +716,10 @@ def extract_image_infos(msg: dict[str, Any], limit: int | None = None) -> list[d
     direct = msg.get("image")
     if isinstance(direct, str) and direct.strip():
         add_item({"source": "image", "blob": direct.strip()})
-
-    raw_images = msg.get("images")
-    if isinstance(raw_images, list):
-        for item in raw_images:
-            add_item(item, "image")
-
-    raw_frames = msg.get("frames")
-    if isinstance(raw_frames, list):
-        for item in raw_frames:
-            add_item(item, "frame")
-
+    for item in msg.get("images") or []:
+        add_item(item, "image")
+    for item in msg.get("frames") or []:
+        add_item(item, "frame")
     return infos[:limit]
 
 
@@ -783,18 +729,14 @@ def data_uri_from_base64(data: str, mime: str) -> str:
         return data
     return f"data:{mime};base64,{data}"
 
+
 def make_llama_user_content(msg: dict[str, Any], user_text: str) -> list[dict[str, Any]]:
     parts: list[dict[str, Any]] = []
     has_audio = bool(msg.get("audio"))
     image_infos = extract_image_infos(msg)
     has_image = bool(image_infos)
-
-    if has_audio and LLAMA_ENABLE_AUDIO:                 # ← нативный слух Gemma 4
-        parts.append({
-            "type": "input_audio",
-            "input_audio": {"data": msg["audio"], "format": "wav"},
-        })
-
+    if has_audio and LLAMA_ENABLE_AUDIO:
+        parts.append({"type": "input_audio", "input_audio": {"data": msg["audio"], "format": "wav"}})
     if user_text:
         prompt_text = user_text.strip()
     elif has_audio:
@@ -804,11 +746,11 @@ def make_llama_user_content(msg: dict[str, Any], user_text: str) -> list[dict[st
     else:
         prompt_text = "Продолжи разговор по последней реплике."
     parts.append({"type": "text", "text": prompt_text})
-
     if has_image and LLAMA_ENABLE_IMAGES:
         for info in image_infos:
             parts.append({"type": "image_url", "image_url": {"url": data_uri_from_base64(info["blob"], "image/jpeg")}})
     return parts
+
 
 def normalize_client_history(msg: dict[str, Any]) -> list[dict[str, str]]:
     raw = msg.get("history")
@@ -824,10 +766,8 @@ def normalize_client_history(msg: dict[str, Any]) -> list[dict[str, str]]:
         text = str(item.get("text") or "").strip()
         if not text or text.startswith("[ERROR]"):
             continue
-        text = SPACE_RE.sub(" ", text)[:3000]
-        out.append({"role": role, "content": text})
-    max_messages = max(2, LLAMA_HISTORY_TURNS * 2)
-    return out[-max_messages:]
+        out.append({"role": role, "content": SPACE_RE.sub(" ", text)[:3000]})
+    return out[-max(2, LLAMA_HISTORY_TURNS * 2):]
 
 
 def llama_system_prompt(system_prompt: str) -> str:
@@ -847,17 +787,13 @@ def build_llama_messages(session: LlamaSession, system_prompt: str, msg: dict[st
 
 def llama_payload(messages: list[dict[str, Any]], sampler: dict[str, Any], *, stream: bool) -> dict[str, Any]:
     payload: dict[str, Any] = {
-        "model": LLAMA_MODEL,
-        "messages": messages,
-        "temperature": float(sampler["temperature"]),
-        "top_p": float(sampler["top_p"]),
-        "top_k": int(sampler["top_k"]),
-        "min_p": float(sampler.get("min_p", 0.08)),
+        "model": LLAMA_MODEL, "messages": messages,
+        "temperature": float(sampler["temperature"]), "top_p": float(sampler["top_p"]),
+        "top_k": int(sampler["top_k"]), "min_p": float(sampler.get("min_p", 0.08)),
         "typical_p": float(sampler.get("typical_p", 1.0)),
         "repeat_penalty": float(sampler.get("repeat_penalty", DEFAULT_REPEAT_PENALTY)),
         "repeat_last_n": int(sampler.get("repeat_last_n", DEFAULT_REPEAT_LAST_N)),
-        "stream": stream,
-        "reasoning_format": LLAMA_REASONING_FORMAT,
+        "stream": stream, "reasoning_format": LLAMA_REASONING_FORMAT,
     }
     max_out = int(sampler.get("max_output_tokens", DEFAULT_MAX_OUTPUT_TOKENS))
     if max_out > 0:
@@ -913,21 +849,16 @@ def llama_chat_stream(messages: list[dict[str, Any]], sampler: dict[str, Any]) -
 def append_llama_history(session: LlamaSession, msg: dict[str, Any], user_text: str, assistant_text: str) -> None:
     if not assistant_text.strip():
         return
-    user_memory = user_text.strip() or "[Голос/Медиа]"
-    session.history.append({"role": "user", "content": user_memory[:2000]})
+    session.history.append({"role": "user", "content": (user_text.strip() or "[Голос/Медиа]")[:2000]})
     session.history.append({"role": "assistant", "content": assistant_text.strip()[:4000]})
 
 
 @app.get("/api/status")
 async def api_status():
     return {
-        "backend": LLM_BACKEND,
-        "model_label": MODEL_LABEL,
-        "model": LLAMA_MODEL,
-        "launcher_name": LAUNCHER_NAME,
-        "text_streaming": TEXT_STREAMING,
-        "llama_streaming": LLAMA_STREAMING,
-        "tts_streaming": TTS_STREAMING,
+        "backend": LLM_BACKEND, "model_label": MODEL_LABEL, "model": LLAMA_MODEL,
+        "launcher_name": LAUNCHER_NAME, "text_streaming": TEXT_STREAMING,
+        "llama_streaming": LLAMA_STREAMING, "tts_streaming": TTS_STREAMING,
         "tts_engine": os.environ.get("TTS_ENGINE", "silero"),
     }
 
@@ -980,6 +911,37 @@ async def websocket_endpoint(ws: WebSocket):
                 break
             interrupted.clear()
 
+            # ── TTS-replay (кнопка 🔊 «Listen»): озвучить готовый текст БЕЗ LLM ──
+            # Без этой ветки сервер трактует пакет {type:'tts'} как обычный запрос
+            # и генерирует НОВЫЙ ответ на текст ответа → «Listen» работает как «continue».
+            if msg.get("type") == "tts":
+                tts_rid = str(msg.get("request_id") or f"tts-{int(time.time() * 1000)}")
+                tts_text = strip_thinking_and_controls(str(msg.get("text") or ""), final=True).strip()
+                tts_engine_name = normalize_tts_engine(msg.get("tts_engine"))
+                tts_settings = {
+                    "silero_speaker": msg.get("silero_speaker") or msg.get("voice"),
+                    "silero_speed": msg.get("silero_speed"),
+                    "voice": msg.get("voice"),
+                }
+                if tts_text:
+                    try:
+                        backend = get_cached_tts_backend(tts_engine_name, tts_settings)
+                        if backend is None:
+                            backend = await loop.run_in_executor(None, lambda: get_tts_backend(tts_engine_name, tts_settings))
+                        sentences = [s for s in extract_speak_chunks(tts_text, force=True)[0] if s.strip()]
+                        if sentences:
+                            await ws.send_text(json.dumps({"type": "audio_start", "request_id": tts_rid, "sample_rate": backend.sample_rate}))
+                            for idx, sentence in enumerate(sentences):
+                                pcm = await loop.run_in_executor(None, lambda s=sentence, b=backend: b.generate(s))
+                                pcm_int16 = (pcm * 32767).clip(-32768, 32767).astype(np.int16)
+                                await ws.send_text(json.dumps({"type": "audio_chunk", "request_id": tts_rid, "audio": base64.b64encode(pcm_int16.tobytes()).decode(), "index": idx}))
+                            await ws.send_text(json.dumps({"type": "audio_end", "request_id": tts_rid, "tts_time": 0}))
+                    except Exception as exc:
+                        print(f"[TTS replay] error: {exc}")
+                continue
+
+            chat_id = str(msg.get("chat_id") or "default")[:80]
+
             chat_id = str(msg.get("chat_id") or "default")[:80]
             system_prompt = str(msg.get("system_prompt") or DEFAULT_SYSTEM_PROMPT)
             settings = msg.get("settings") or {}
@@ -1000,10 +962,10 @@ async def websocket_endpoint(ws: WebSocket):
 
             def stream_worker():
                 try:
-                    ensure_llama_model(msg.get("llama_model_path") or msg.get("model_path"), msg.get("llama_mmproj_path") or msg.get("mmproj_path"))
+                    ensure_llama_model(msg.get("llama_model_path") or msg.get("model_path"),
+                                       msg.get("llama_mmproj_path") or msg.get("mmproj_path"))
                     messages = build_llama_messages(llama_session, system_prompt, msg, user_text)
-                    has_audio_input = bool(msg.get("audio"))
-                    use_stream = TEXT_STREAMING and LLAMA_STREAMING and not has_audio_input
+                    use_stream = TEXT_STREAMING and LLAMA_STREAMING
                     if use_stream:
                         for piece in llama_chat_stream(messages, sampler):
                             if piece:
@@ -1018,7 +980,7 @@ async def websocket_endpoint(ws: WebSocket):
                     loop.call_soon_threadsafe(llm_queue.put_nowait, None)
 
             threading.Thread(target=stream_worker, daemon=True).start()
-            
+
             audio_started = False
             sentence_index = 0
             tts_total_time = 0.0
@@ -1037,44 +999,34 @@ async def websocket_endpoint(ws: WebSocket):
                     if len(clean_sentence) < 2 or key in seen_tts_sentences:
                         continue
                     seen_tts_sentences.add(key)
-
                     if request_backend is None:
                         request_backend = get_cached_tts_backend(tts_engine, settings)
                         if request_backend is None:
                             start_tts_background_load(tts_engine, settings)
                             try:
                                 request_backend = await loop.run_in_executor(None, lambda: get_tts_backend(tts_engine, settings))
-                            except Exception as exc:
+                            except Exception:
                                 break
-
                     if not audio_started and request_backend:
                         await ws.send_text(json.dumps({
-                            "type": "audio_start",
-                            "request_id": request_id,
+                            "type": "audio_start", "request_id": request_id,
                             "sample_rate": request_backend.sample_rate,
                         }))
                         audio_started = True
-
                     tts0 = time.time()
                     pcm = await loop.run_in_executor(None, lambda s=clean_sentence, b=request_backend: b.generate(s))
                     tts_total_time += time.time() - tts0
-
                     if request_cancelled(request_id):
                         break
-
                     pcm_int16 = (pcm * 32767).clip(-32768, 32767).astype(np.int16)
                     await ws.send_text(json.dumps({
-                        "type": "audio_chunk",
-                        "request_id": request_id,
-                        "audio": base64.b64encode(pcm_int16.tobytes()).decode(),
-                        "index": sentence_index,
+                        "type": "audio_chunk", "request_id": request_id,
+                        "audio": base64.b64encode(pcm_int16.tobytes()).decode(), "index": sentence_index,
                     }))
                     sentence_index += 1
 
             tts_task = asyncio.create_task(tts_worker())
 
-            # Native-аудио: фронт текст НЕ прислал → транскрибируем whisper'ом параллельно
-            # генерации ответа и шлём текст в пузырь пользователя отдельным сообщением.
             if (not user_text) and msg.get("audio") and LLAMA_ENABLE_AUDIO:
                 async def whisper_worker():
                     try:
@@ -1107,20 +1059,16 @@ async def websocket_endpoint(ws: WebSocket):
                 piece = await llm_queue.get()
                 if piece is None:
                     break
-
+                # Страховка: вырезаем любые thought/channel теги, если модель их сунула.
                 piece = strip_thinking_and_controls(str(piece), final=False)
                 if not piece:
                     continue
                 delta, visible_text = normalize_stream_delta(piece, visible_text)
                 if not delta:
                     continue
-
                 await ws.send_text(json.dumps({
-                    "type": "text_delta",
-                    "request_id": request_id,
-                    "text": delta,
+                    "type": "text_delta", "request_id": request_id, "text": delta,
                 }, ensure_ascii=False))
-
                 sentence_buffer += delta
                 chunks, sentence_buffer = extract_speak_chunks(sentence_buffer, force=False, first=(len(seen_text_sentences) == 0))
                 for chunk in chunks:
@@ -1136,13 +1084,9 @@ async def websocket_endpoint(ws: WebSocket):
             if not request_cancelled(request_id):
                 append_llama_history(llama_session, msg, user_text, final_clean)
                 await ws.send_text(json.dumps({
-                    "type": "text_final",
-                    "request_id": request_id,
-                    "text": final_clean,
-                    "llm_time": round(llm_time, 2),
-                    "tts_time": round(tts_total_time, 2),
-                    "sampler": sampler,
-                    "backend": LLM_BACKEND,
+                    "type": "text_final", "request_id": request_id, "text": final_clean,
+                    "llm_time": round(llm_time, 2), "tts_time": round(tts_total_time, 2),
+                    "sampler": sampler, "backend": LLM_BACKEND,
                 }, ensure_ascii=False))
 
             await tts_queue.put(None)
@@ -1150,7 +1094,6 @@ async def websocket_endpoint(ws: WebSocket):
 
             if server_tts_enabled and not request_cancelled(request_id):
                 await ws.send_text(json.dumps({"type": "audio_end", "request_id": request_id, "tts_time": round(tts_total_time, 2)}))
-
     except Exception as exc:
         print(f"WebSocket session error: {exc}")
     finally:
@@ -1159,9 +1102,6 @@ async def websocket_endpoint(ws: WebSocket):
 
 if __name__ == "__main__":
     uvicorn.run(
-        app,
-        host="127.0.0.1",
-        port=8000,
-        ws=os.environ.get("UVICORN_WS_IMPL", "websockets"),
-        log_level="info",
+        app, host="127.0.0.1", port=8000,
+        ws=os.environ.get("UVICORN_WS_IMPL", "websockets"), log_level="info",
     )
