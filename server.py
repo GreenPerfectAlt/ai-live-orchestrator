@@ -107,7 +107,7 @@ DEFAULT_SAMPLER = {
 }
 
 DEFAULT_SYSTEM_PROMPT = (
-    "Ты — голосовой ИИ-ассистент Parlor. Отвечай естественно, напрямую и по текущему сообщению пользователя. "
+    "Ты — голосовой ИИ-ассистент. Отвечай естественно, напрямую и по текущему сообщению пользователя. "
     "Всегда учитывай предыдущие сообщения чата. "
     "Если вопрос простой — отвечай коротко; если пользователь просит объяснить, перечислить или продолжить — отвечай полно. "
     "Обычно говори по-русски, но если пользователь пишет или говорит по-английски — отвечай по-английски. "
@@ -387,7 +387,7 @@ def normalize_stream_delta(chunk_text: str, emitted_text: str) -> tuple[str, str
         return text[len(emitted_text):], text
     if emitted_text.endswith(text):
         return "", emitted_text
-    max_overlap = min(len(emitted_text), len(text))
+    max_overlap = min(len(emitted_text), len(text), 512)
     for n in range(max_overlap, 0, -1):
         if emitted_text.endswith(text[:n]):
             delta = text[n:]
@@ -897,10 +897,12 @@ async def websocket_endpoint(ws: WebSocket):
         existing = llama_sessions.get(chat_id)
         if existing and existing.prompt_id == prompt_id:
             return existing
+        if len(llama_sessions) >= 64:
+            llama_sessions.pop(next(iter(llama_sessions)))
         session = LlamaSession(chat_id=chat_id, prompt_id=prompt_id)
         llama_sessions[chat_id] = session
         return session
-
+        
     def request_cancelled(request_id: str) -> bool:
         return bool(request_id and request_id in cancelled_requests) or interrupted.is_set()
 
@@ -939,8 +941,6 @@ async def websocket_endpoint(ws: WebSocket):
                     except Exception as exc:
                         print(f"[TTS replay] error: {exc}")
                 continue
-
-            chat_id = str(msg.get("chat_id") or "default")[:80]
 
             chat_id = str(msg.get("chat_id") or "default")[:80]
             system_prompt = str(msg.get("system_prompt") or DEFAULT_SYSTEM_PROMPT)
