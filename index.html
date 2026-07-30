@@ -343,7 +343,7 @@ const CONFIG = Object.freeze({
   WATCHDOG: { CHECK_INTERVAL_MS: 850, AUTO_STT_STUCK_TIMEOUT_MS: 6500, STALE_RECORDING_TIMEOUT_MS: 4500, STT_STARTING_TIMEOUT_MS: 4500, STT_NO_RESULT_TIMEOUT_MS: 15000, STT_STALE_RESULT_TIMEOUT_MS: 18000 },
   TIMERS: {
     STT_RESTART_AFTER_SEND_MS: 350, STT_RESTART_AFTER_ERROR_MS: 450, STT_RESTART_AFTER_END_MS: 220,
-    STT_RESTART_AFTER_NOT_ALLOWED_MS: 2000, MIC_FINALIZE_DELAY_MS: 520, STT_FINAL_WAIT_MS: 360,
+    STT_RESTART_AFTER_NOT_ALLOWED_MS: 2000, MIC_FINALIZE_DELAY_MS: 220, STT_FINAL_WAIT_MS: 160,
     AUTO_STT_SEND_LOCK_MS: 1200, AUTO_STT_SUPPRESS_MS: 1800, AUTO_STT_FINAL_SEND_MS: 350,
     AUTO_STT_DEDUP_MS: 2500, AUTO_MIC_RESTART_AFTER_SEND_MS: 900, AUTO_MIC_RESTART_AFTER_RAW_MS: 450,
     AUTO_MIC_RESTART_AFTER_FINISH_MS: 250, AUTO_MIC_RESTART_AFTER_NO_SPEECH_MS: 300,
@@ -445,7 +445,7 @@ function frameHash(blob) { return blob ? `${blob.length}:${blob.slice(0, 24)}:${
 const DEFAULT_SETTINGS = Object.freeze({
   wsUrl: '', voice: '', temperature: 1.0, top_p: 1.0, top_k: 0, max_output_tokens: 0, historyMessages: 20,
   cameraMax: 384, screenMax: 384, pdfMax: 448, videoMax: 384, imageMax: 512,
-  liveFps: 1.0, liveFrames: 2, autoVoice: false, startAutoWithScreen: true, voiceThreshold: 0.04, silenceStopMs: 950, minSpeechMs: 550,
+  liveFps: 1.0, liveFrames: 2, autoVoice: false, startAutoWithScreen: true, voiceThreshold: 0.04, silenceStopMs: 650, minSpeechMs: 400,
   bargeIn: 1, bargeInGraceMs: 250, bargeInSensitivity: 1.35, attachCameraAlways: 0, visionMode: 'auto',
   browserStt: 1, sttLang: 'en-US', sendRawAudio: 0, audioInputMode: 'stt', ttsMode: 'server', browserTtsRate: 1.0,
   ttsEngine: 'supertonic', sileroSpeaker: 'baya', sileroSpeed: 1.0,
