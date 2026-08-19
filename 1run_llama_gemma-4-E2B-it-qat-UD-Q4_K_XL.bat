@@ -92,10 +92,9 @@ set "LLAMA_STARTUP_TIMEOUT=240"
 
 set "LLAMA_THREADS=6"
 set "LLAMA_CTX_SIZE=4096"
-set "LLAMA_BATCH_SIZE=256"
-set "LLAMA_UBATCH_SIZE=256"
-set "LLAMA_N_GPU_LAYERS=-1"
-set "LLAMA_FLAGS=-c %LLAMA_CTX_SIZE% --reasoning off --reasoning-budget 0 -ctk q8_0 -ctv q8_0 --temp 1.0 --top-k 0 --top-p 1.0 --min-p 0.05 --typical 1.00 --mirostat 0 --xtc-probability 0.1 --top-n-sigma 1.1 --swa-full --no-ui --poll 100 --prio 3 -t %LLAMA_THREADS% --threads-batch %LLAMA_THREADS% -n -1 -ngl all -fa on -fit off --parallel 1 --keep 1 --port 8080 -b %LLAMA_BATCH_SIZE% -ub %LLAMA_UBATCH_SIZE% --jinja --no-mmproj-offload"
+set "LLAMA_BATCH_SIZE=512"
+set "LLAMA_UBATCH_SIZE=512"
+set "LLAMA_FLAGS=-c %LLAMA_CTX_SIZE% -md "C:\AI\0\Gemma_4\gemma-4-E2B\mtp-gemma-4-E2B-it.gguf" --spec-type draft-mtp --spec-draft-n-max 3 --reasoning off --reasoning-budget 0 --swa-full -cmoe --kv-unified --ctx-checkpoints 3 -ctk q8_0 -ctv q8_0 --samplers "top_k;min_p;dry;temperature" --top-k 50 --reasoning-preserve --temp 1.0 --min-p 0.05 --top-p 1.0 --typical 1.0 --mirostat 0 --top-n-sigma -1.0 --xtc-probability 0.0 --xtc-threshold 1.0 -n -1 -ngl all --prio 3 --poll 100 -fa on -fit on -t 6 --threads-batch 6 --no-mmproj-offload"
 
 
 :: ─── TTS НАСТРОЙКИ ──────────────────────────────────────────────
@@ -126,7 +125,7 @@ set "SILERO_USE_HUB=1"
 
 :: ─── STT НАСТРОЙКИ ──────────────────────────────────────────────
 set "STT_ENGINE=faster_whisper"
-set "STT_MODEL=turbo"
+set "STT_MODEL=small"
 set "STT_LANG=ru"
 set "STT_COMPUTE_TYPE=int8"
 set "STT_BEAM_SIZE=3"
@@ -196,7 +195,7 @@ taskkill /IM llama-server.exe /F >nul 2>nul
 timeout /t 1 /nobreak >nul
 
 echo [START] Starting llama-server on 127.0.0.1:8080 ...
-start "llama-server E2B" "%LLAMA_SERVER_EXE%" -m "%MODEL_PATH%" --mmproj "%MM_PROJ_PATH%" --alias "%LLAMA_MODEL%" --host 127.0.0.1 %LLAMA_FLAGS%
+start "llama-server E2B" cmd /c "%LLAMA_SERVER_EXE% -m %MODEL_PATH% --mmproj %MM_PROJ_PATH% --alias %LLAMA_MODEL% --host 127.0.0.1 %LLAMA_FLAGS% & pause"
 timeout /t 5 /nobreak >nul
 
 echo ===================================================

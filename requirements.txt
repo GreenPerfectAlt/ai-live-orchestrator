@@ -1,7 +1,20 @@
+# Основные веб-компоненты
 fastapi
 uvicorn[standard]
 websockets
+pydantic
+
+# Работа с формами и файлами (критично для загрузки .txt контекста)
+python-multipart
+
+# Математика и аудио
 numpy>=2.0.0
 requests
+
+# TTS движки
 supertonic>=1.3.1
+# torch ставится отдельно в .bat (CPU-версия), но указываем здесь для полноты
+torch 
+
+# STT (распознавание речи)
 faster-whisper>=1.0.0
