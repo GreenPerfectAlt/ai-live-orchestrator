@@ -369,10 +369,14 @@ class ChatStream:
                     self.prompt_tokens = usage["prompt_tokens"]
                 choices = chunk.get("choices") or []
                 text = None
+                reason = None
                 if choices:
                     delta = choices[0].get("delta") or {}
                     if isinstance(delta, dict):
                         text = delta.get("content")
+                        reason = delta.get("reasoning_content") or delta.get("reasoning")
+                if reason and on_reasoning:
+                    on_reasoning(reason)
                 if text:
                     on_delta(text)
         except Exception as e:

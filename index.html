@@ -9,9 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --c-bg: #050509; --c-surface: rgba(255,255,255,0.045); --c-surface-2: rgba(255,255,255,0.07);
-  --c-surface-hover: rgba(255,255,255,0.10); --c-border: rgba(255,255,255,0.095);
-  --c-text: #c8cad0; --c-text-dim: #737680; --c-text-bright: #f2f4f8;
+  --c-bg: #050509; --c-surface: rgba(255,255,255,0.045); --c-surface-hover: rgba(255,255,255,0.10);
+  --c-border: rgba(255,255,255,0.095); --c-text: #c8cad0; --c-text-dim: #737680; --c-text-bright: #f2f4f8;
   --c-listen: #4ade80; --c-listen-dim: rgba(74,222,128,0.13);
   --c-process: #f59e0b; --c-process-dim: rgba(245,158,11,0.13);
   --c-speak: #818cf8; --c-speak-dim: rgba(129,140,248,0.13);
@@ -23,65 +22,39 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
 body { background: var(--c-bg); color: var(--c-text); font-family: var(--font-body); overflow: hidden; }
-body::before {
-  content: ""; position: fixed; top: 5%; left: 50%; transform: translateX(-50%);
-  width: 900px; height: 620px; background: radial-gradient(ellipse, var(--glow-dim), transparent 72%);
-  pointer-events: none; opacity: .78; transition: background .5s ease;
-}
+body::before { content: ""; position: fixed; top: 5%; left: 50%; transform: translateX(-50%); width: 900px; height: 620px; background: radial-gradient(ellipse, var(--glow-dim), transparent 72%); pointer-events: none; opacity: .78; transition: background .5s ease; }
 .app { height: 100vh; display: flex; flex-direction: column; position: relative; z-index: 1; }
-.navbar {
-  height: 56px; display: flex; align-items: center; justify-content: space-between;
-  gap: 16px; padding: 12px 20px; background: rgba(5,5,9,.72); backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--c-border); flex-shrink: 0;
-}
+.navbar { height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 20px; background: rgba(5,5,9,.72); backdrop-filter: blur(12px); border-bottom: 1px solid var(--c-border); flex-shrink: 0; }
 .nav-left, .nav-center, .nav-right { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .logo { display: flex; align-items: center; gap: 10px; color: var(--c-text-bright); }
 .logo-mark { width: 28px; height: 28px; border-radius: 9px; background: linear-gradient(135deg,var(--glow),transparent); box-shadow: 0 0 22px var(--glow-dim); }
 .logo h1 { font-size: 20px; font-weight: 650; letter-spacing: .01em; }
-.badge, .status-pill, .chip {
-  display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--c-border); background: var(--c-surface);
-  color: var(--c-text-dim); border-radius: 999px; padding: 5px 10px; font-size: 10px; font-weight: 700;
-  letter-spacing: .07em; text-transform: uppercase; white-space: nowrap;
-}
+.badge, .status-pill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--c-border); background: var(--c-surface); color: var(--c-text-dim); border-radius: 999px; padding: 5px 10px; font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
 .model-label { max-width: 410px; overflow: hidden; text-overflow: ellipsis; }
 .status-pill::before { content:""; width: 6px; height: 6px; border-radius: 50%; background: var(--c-text-dim); }
-.status-pill.connected { color: var(--c-listen); background: var(--c-listen-dim); }
-.status-pill.connected::before { background: var(--c-listen); }
-.status-pill.processing { color: var(--c-process); background: var(--c-process-dim); }
-.status-pill.processing::before { background: var(--c-process); }
-.status-pill.disconnected { color: var(--c-danger); background: var(--c-danger-dim); }
-.status-pill.disconnected::before { background: var(--c-danger); }
-.btn {
-  border: 1px solid var(--c-border); background: var(--c-surface); color: var(--c-text);
-  border-radius: 11px; padding: 8px 12px; font: inherit; font-size: 12px; font-weight: 700;
-  cursor: pointer; transition: .16s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-}
+.status-pill.connected { color: var(--c-listen); background: var(--c-listen-dim); } .status-pill.connected::before { background: var(--c-listen); }
+.status-pill.processing { color: var(--c-process); background: var(--c-process-dim); } .status-pill.processing::before { background: var(--c-process); }
+.status-pill.disconnected { color: var(--c-danger); background: var(--c-danger-dim); } .status-pill.disconnected::before { background: var(--c-danger); }
+.btn { border: 1px solid var(--c-border); background: var(--c-surface); color: var(--c-text); border-radius: 11px; padding: 8px 12px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: .16s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .btn:hover { background: var(--c-surface-hover); color: var(--c-text-bright); }
 .btn.active { background: var(--c-listen-dim); border-color: rgba(74,222,128,.22); color: var(--c-listen); }
 .btn.danger { color: var(--c-danger); }
 .btn.icon { width: 32px; height: 32px; padding: 0; border-radius: 10px; }
-.main {
-  flex: 1; min-height: 0; display: grid;
-  grid-template-columns: minmax(220px, .46fr) minmax(420px, 1fr) minmax(300px, .62fr);
-  gap: 12px; padding: 16px 20px 20px;
-}
-.chat-column {
-  min-height: 0; display: flex; flex-direction: column; overflow: hidden;
-  background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 18px;
-}
+.btn.live-on { color:#4ade80; border-color:rgba(74,222,128,.35); background:rgba(74,222,128,.12); box-shadow:0 0 16px rgba(74,222,128,.12); }
+.tiny { font-size: 10px; padding: 5px 8px; border-radius: 999px; }
+.nav-tools { display:flex; align-items:center; gap:8px; }
+.main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(220px,.46fr) minmax(420px,1fr) minmax(300px,.62fr); gap: 12px; padding: 16px 20px 20px; }
+.chat-column { min-height: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 18px; }
 .system-strip { padding: 12px 14px; border-bottom: 1px solid var(--c-border); background: rgba(255,255,255,.025); display:flex; gap:10px; align-items:center; }
 .system-strip input { flex: 1; min-width: 0; border: 1px solid transparent; background: transparent; color: var(--c-text); outline: none; font: inherit; font-size: 12.5px; }
-.transcript { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.12) transparent; }
+.transcript { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px; scrollbar-width: thin; }
 .transcript-inner { display: flex; flex-direction: column; gap: 10px; }
-.msg {
-  position: relative; max-width: 86%; padding: 10px 14px; border-radius: 14px;
-  font-size: 13.5px; line-height: 1.55; word-break: break-word; animation: msg-in .18s ease-out;
-}
+.msg { position: relative; max-width: 86%; padding: 10px 14px; border-radius: 14px; font-size: 13.5px; line-height: 1.55; word-break: break-word; animation: msg-in .18s ease-out; }
 @keyframes msg-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 .msg.user { align-self: flex-end; background: rgba(74,222,128,.085); color: #b7e2c7; border-bottom-right-radius: 5px; }
 .msg.assistant { align-self: flex-start; background: rgba(255,255,255,.055); color: var(--c-text); border-bottom-left-radius: 5px; }
 .msg.pending { color: var(--c-text-dim); }
-.msg .meta { margin-top: 5px; font-size: 10.5px; color: var(--c-text-dim); letter-spacing: .02em; }
+.msg .meta { margin-top: 5px; font-size: 10.5px; color: var(--c-text-dim); }
 .msg-actions { position: absolute; top: -9px; right: 8px; opacity: 0; pointer-events: none; display:flex; gap:4px; transition:.12s ease; }
 .msg.assistant .msg-actions { right: auto; left: 8px; }
 .msg:hover .msg-actions { opacity: 1; pointer-events: auto; }
@@ -102,12 +75,10 @@ body::before {
 #micBtn { pointer-events:auto; user-select:none; touch-action:none; flex-shrink:0; min-width:46px; min-height:38px; position:relative; z-index:50; cursor:pointer; }
 .mic-btn.recording { color: #fff; background: rgba(251,113,133,.28); border-color: rgba(251,113,133,.55); box-shadow: 0 0 18px rgba(251,113,133,.28); transform:scale(.96); }
 .side-column { display:grid; gap:12px; min-height:0; }
-.left-sources { grid-template-rows: minmax(280px, 1.45fr) minmax(160px, .72fr); }
-.right-sources { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(320px, 1.7fr) minmax(170px, .78fr); }
-.right-sources #screenTile { grid-column: 1 / -1; }
-.right-sources #videoTile { grid-column: 1; }
-.right-sources #pdfTile { grid-column: 2; }
-.tile { position:relative; min-height:0; overflow:hidden; border-radius:16px; background:#0a0a10; border:1px solid var(--c-border); box-shadow: 0 0 0 1px rgba(255,255,255,.02); }
+.left-sources { grid-template-rows: minmax(280px,1.45fr) minmax(160px,.72fr); }
+.right-sources { grid-template-columns: repeat(2,minmax(0,1fr)); grid-template-rows: minmax(320px,1.7fr) minmax(170px,.78fr); }
+.right-sources #screenTile { grid-column: 1 / -1; } .right-sources #videoTile { grid-column: 1; } .right-sources #pdfTile { grid-column: 2; }
+.tile { position:relative; min-height:0; overflow:hidden; border-radius:16px; background:#0a0a10; border:1px solid var(--c-border); }
 .tile.listening { box-shadow: 0 0 0 1px rgba(74,222,128,.26), 0 0 28px var(--c-listen-dim); }
 .tile.processing { box-shadow: 0 0 0 1px rgba(245,158,11,.30), 0 0 28px var(--c-process-dim); }
 .tile.speaking { box-shadow: 0 0 0 1px rgba(129,140,248,.32), 0 0 34px var(--c-speak-dim); }
@@ -121,16 +92,9 @@ body::before {
 .tile-bottom { left:50%; bottom:10px; transform:translateX(-50%); max-width:calc(100% - 18px); display:flex; align-items:center; gap:6px; padding:5px 8px; border-radius:999px; background:rgba(10,10,16,.74); color:#eef0f4; font-size:11px; backdrop-filter: blur(8px); }
 .tile-empty { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:14px; background:repeating-linear-gradient(-45deg, rgba(255,255,255,.018) 0 12px, transparent 12px 24px); color:var(--c-text-dim); font-size:12px; text-align:center; }
 .file-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:220px; }
-.tiny { font-size: 10px; padding: 5px 8px; border-radius: 999px; }
-.nav-tools { display:flex; align-items:center; gap:8px; }
 .drawer-backdrop, .modal-backdrop { position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,.46); opacity: 0; pointer-events: none; transition: .18s ease; }
 .drawer-backdrop.open, .modal-backdrop.open { opacity: 1; pointer-events: auto; }
-.chat-drawer {
-  position: fixed; z-index: 100; left: 0; top: 0; bottom: 0; width: 310px;
-  background: rgba(12,12,18,.96); border-right: 1px solid var(--c-border);
-  backdrop-filter: blur(18px); transform: translateX(-104%); transition: .2s ease;
-  display:flex; flex-direction:column; box-shadow: 24px 0 70px rgba(0,0,0,.42);
-}
+.chat-drawer { position: fixed; z-index: 100; left: 0; top: 0; bottom: 0; width: 310px; background: rgba(12,12,18,.96); border-right: 1px solid var(--c-border); backdrop-filter: blur(18px); transform: translateX(-104%); transition: .2s ease; display:flex; flex-direction:column; }
 .chat-drawer.open { transform: translateX(0); }
 .drawer-head, .modal-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px; border-bottom:1px solid var(--c-border); }
 .drawer-title, .modal-title { font-size:13px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--c-text-bright); }
@@ -141,54 +105,35 @@ body::before {
 .chat-item.active { border-color:rgba(74,222,128,.34); background:rgba(74,222,128,.08); }
 .chat-item-title { font-size:13px; font-weight:800; color:var(--c-text-bright); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 .chat-item-meta { font-size:10.5px; color:var(--c-text-dim); }
-.modal-card {
-  position: fixed; z-index: 101; left:50%; top:50%; transform: translate(-50%,-48%) scale(.98);
-  width:min(680px, calc(100vw - 32px)); max-height:calc(100vh - 48px); overflow:hidden;
-  background: rgba(14,14,21,.97); border:1px solid var(--c-border); border-radius:18px;
-  box-shadow:0 30px 90px rgba(0,0,0,.55); opacity:0; pointer-events:none; transition:.18s ease;
-}
+.modal-card { position: fixed; z-index: 101; left:50%; top:50%; transform: translate(-50%,-48%) scale(.98); width:min(680px, calc(100vw - 32px)); max-height:calc(100vh - 48px); overflow:hidden; background: rgba(14,14,21,.97); border:1px solid var(--c-border); border-radius:18px; opacity:0; pointer-events:none; transition:.18s ease; }
 .modal-card.open { opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
 .modal-body { padding:14px; overflow:auto; max-height:calc(100vh - 150px); display:grid; gap:14px; }
 .settings-grid { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:12px; }
 .settings-field { display:grid; gap:6px; }
 .settings-field.wide { grid-column:1 / -1; }
 .settings-field label { font-size:11px; color:var(--c-text-dim); font-weight:800; letter-spacing:.05em; text-transform:uppercase; }
-.settings-field input, .settings-field select {
-  width:100%; border:1px solid var(--c-border); background:rgba(0,0,0,.24); color:var(--c-text-bright);
-  border-radius:12px; padding:9px 10px; font:inherit; font-size:13px; outline:none;
-}
-.settings-field input:focus { border-color:rgba(74,222,128,.35); }
+.settings-field input, .settings-field select { width:100%; border:1px solid var(--c-border); background:rgba(0,0,0,.24); color:var(--c-text-bright); border-radius:12px; padding:9px 10px; font:inherit; font-size:13px; outline:none; }
 .settings-help { color:var(--c-text-dim); font-size:11.5px; line-height:1.45; }
 .modal-footer { display:flex; justify-content:space-between; gap:10px; padding:14px; border-top:1px solid var(--c-border); }
 .modal-footer > div { display:flex; gap:8px; }
-@media (max-width: 700px) { .settings-grid { grid-template-columns:1fr; } .nav-tools .btn:not(.icon) { font-size:0; width:32px; padding:0; } }
-.btn.live-on { color:#4ade80; border-color:rgba(74,222,128,.35); background:rgba(74,222,128,.12); box-shadow:0 0 16px rgba(74,222,128,.12); }
 .live-label { position:absolute; left:14px; bottom:14px; z-index:4; font-size:10px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:rgba(238,240,244,.68); background:rgba(0,0,0,.42); border:1px solid rgba(255,255,255,.08); border-radius:999px; padding:6px 9px; backdrop-filter:blur(10px); display:none; }
 .live-label.on { display:block; color:#4ade80; border-color:rgba(74,222,128,.25); }
-.live-label::before { content:''; display:inline-block; width:6px; height:6px; border-radius:50%; background:currentColor; margin-right:6px; box-shadow:0 0 8px currentColor; }
-@media (max-width: 980px) {
-  body { overflow:auto; }
-  .app { min-height: 100vh; height: auto; }
-  .main { grid-template-columns:1fr!important; grid-auto-rows:auto; overflow:auto; }
-  .left-sources, .right-sources { grid-template-columns:1fr; grid-template-rows:none; }
-  .right-sources #screenTile, .right-sources #videoTile, .right-sources #pdfTile { grid-column:auto; }
-  .side-column .tile { min-height: 260px; }
-  .chat-column { min-height: 540px; }
-  .nav-center { display:none; }
-}
+.live-label::before { content:''; display:inline-block; width:6px; height:6px; border-radius:50%; background:currentColor; margin-right:6px; }
+@media (max-width: 700px) { .settings-grid { grid-template-columns:1fr; } .nav-tools .btn:not(.icon) { font-size:0; width:32px; padding:0; } }
+@media (max-width: 980px) { body { overflow:auto; } .app { min-height: 100vh; height: auto; } .main { grid-template-columns:1fr!important; grid-auto-rows:auto; overflow:auto; } .left-sources, .right-sources { grid-template-columns:1fr; grid-template-rows:none; } .right-sources #screenTile, .right-sources #videoTile, .right-sources #pdfTile { grid-column:auto; } .side-column .tile { min-height: 260px; } .chat-column { min-height: 540px; } .nav-center { display:none; } }
 </style>
 </head>
 <body>
 <div class="app">
   <nav class="navbar">
-    <div class="nav-left">
-      <div class="logo"><div class="logo-mark"></div><h1>ai-live-orchestrator</h1><span class="badge">GreenPerfectAlt</span></div>
-    </div>
+    <div class="nav-left"><div class="logo"><div class="logo-mark"></div><h1>ai-live-orchestrator</h1><span class="badge">GreenPerfectAlt</span></div></div>
     <div class="nav-center">
       <span id="modelLabel" class="badge model-label">model: loading</span>
       <span id="launcherLabel" class="badge model-label">bat: unknown</span>
     </div>
     <div class="nav-right nav-tools">
+      <button id="uploadContextBtn" class="btn tiny" title="Upload .txt context">📄 ctx</button>
+      <button id="clearContextBtn" class="btn tiny danger" title="Clear context">✖</button>
       <button id="chatsBtn" class="btn tiny" title="Chats">💬 chats</button>
       <button id="settingsBtn" class="btn tiny" title="Settings">⚙ settings</button>
       <span id="status" class="status-pill disconnected">Disconnected</span>
@@ -213,48 +158,34 @@ body::before {
         <div class="settings-field wide">
           <label for="settingsWs">WebSocket URL</label>
           <input id="settingsWs" spellcheck="false" />
-          <div class="settings-help">Leave empty to use the current host: ws://127.0.0.1:8000/ws. Change only if frontend and backend run on different addresses.</div>
+          <div class="settings-help">Leave empty to use the current host.</div>
         </div>
         <div class="settings-field">
           <label for="settingsTtsEngine">TTS engine</label>
-          <select id="settingsTtsEngine">
-            <option value="supertonic">Supertonic 3 / quality</option>
-            <option value="silero">Silero RU / fast live</option>
-          </select>
-          <div class="settings-help">Supertonic 3 = higher quality, slower. Silero RU = faster and simpler for live mode. If Silero is missing, the launcher can install CPU PyTorch.</div>
+          <select id="settingsTtsEngine"><option value="silero">Silero RU / fast live</option><option value="supertonic">Supertonic 3 / quality</option></select>
         </div>
-        <div class="settings-field"><label for="settingsVoice">Supertonic voice</label><input id="settingsVoice" placeholder="F3 / F4 / backend default" /></div>
         <div class="settings-field">
           <label for="settingsSileroSpeaker">Silero voice</label>
-          <select id="settingsSileroSpeaker">
-            <option value="baya">baya / female</option><option value="xenia">xenia / female</option>
-            <option value="kseniya">kseniya / female</option><option value="aidar">aidar / male</option>
-            <option value="eugene">eugene / male</option><option value="random">random</option>
-          </select>
-          <div class="settings-help">Works only when TTS engine = Silero RU.</div>
+          <select id="settingsSileroSpeaker"><option value="xenia">xenia</option><option value="baya">baya</option><option value="kseniya">kseniya</option><option value="aidar">aidar</option><option value="eugene">eugene</option><option value="random">random</option></select>
         </div>
         <div class="settings-field"><label for="settingsSileroSpeed">Silero speed</label><input id="settingsSileroSpeed" type="number" min="0.85" max="1.2" step="0.02" /></div>
+        <div class="settings-field"><label for="settingsVoice">Supertonic voice</label><input id="settingsVoice" placeholder="F3 / F4" /></div>
         <div class="settings-field">
-          <label for="settingsBrowserStt">Mic speech recognition</label>
-          <select id="settingsBrowserStt"><option value="1">On</option><option value="0">Off</option></select>
-          <div class="settings-help">This is not voice output and not a robot voice. Chrome only converts your microphone speech to text for Auto Mic.</div>
+          <label for="settingsAudioPipeline">Audio pipeline</label>
+          <select id="settingsAudioPipeline"><option value="native">Native — WAV to multimodal LLM</option><option value="stt">Offline STT — Whisper text to any LLM</option><option value="hybrid">Hybrid — text + WAV</option></select>
+          <div class="settings-help">Auto-switches to STT when the loaded model has no audio encoder (DeepSeek/Qwen).</div>
         </div>
         <div class="settings-field">
-          <label for="settingsSendRawAudio">Gemma mic input mode</label>
-          <select id="settingsSendRawAudio">
-            <option value="stt">STT text — fast</option><option value="native">Native audio — WAV to Gemma</option><option value="hybrid">Hybrid — STT + WAV</option>
-          </select>
-          <div class="settings-help">Only controls how microphone input is sent to Gemma. Voice output/TTS is separate.</div>
+          <label for="settingsSttModel">Whisper model (offline)</label>
+          <select id="settingsSttModel"><option value="tiny">tiny</option><option value="base">base</option><option value="small">small</option><option value="turbo">turbo</option><option value="medium">medium</option><option value="large-v3">large-v3</option></select>
         </div>
-        <div class="settings-field"><label for="settingsSttLang">STT lang</label><input id="settingsSttLang" placeholder="en-US" /></div>
-        <div class="settings-field"><label for="settingsMaxTokens">Max output tokens (-1/0 = unlimited)</label><input id="settingsMaxTokens" type="number" min="-1" max="32768" step="64" /></div>
+        <div class="settings-field"><label for="settingsMaxTokens">Max output tokens (0 = unlimited)</label><input id="settingsMaxTokens" type="number" min="-1" max="32768" step="64" /></div>
         <div class="settings-field"><label for="settingsTemp">Temperature</label><input id="settingsTemp" type="number" min="0" max="2" step="0.05" /></div>
         <div class="settings-field"><label for="settingsTopP">Top P</label><input id="settingsTopP" type="number" min="0" max="1" step="0.01" /></div>
         <div class="settings-field"><label for="settingsTopK">Top K</label><input id="settingsTopK" type="number" min="0" max="256" step="1" /></div>
         <div class="settings-field"><label for="settingsHistoryTurns">History messages</label><input id="settingsHistoryTurns" type="number" min="2" max="200" step="2" /></div>
+        <div class="settings-field"><label for="settingsVisionMode">Vision send mode</label><select id="settingsVisionMode"><option value="auto">Auto / only when asked</option><option value="always">Always / live</option><option value="off">Off / fastest</option></select></div>
         <div class="settings-field"><label for="settingsCameraMax">Camera max width</label><input id="settingsCameraMax" type="number" min="224" max="1024" step="32" /></div>
-        <div class="settings-field"><label for="settingsAttachCameraAlways">Send camera every turn</label><select id="settingsAttachCameraAlways"><option value="0">Off / only when asked</option><option value="1">On / old camera mode</option></select></div>
-        <div class="settings-field"><label for="settingsVisionMode">Vision send mode</label><select id="settingsVisionMode"><option value="auto">Auto / only when asked</option><option value="always">Always / AI Studio live</option><option value="off">Off / fastest chat</option></select><div class="settings-help">Auto is faster: screen/camera/images are sent only when the prompt asks for visual context. Always is slower, but closer to live vision mode.</div></div>
         <div class="settings-field"><label for="settingsScreenMax">Screen max width</label><input id="settingsScreenMax" type="number" min="224" max="1024" step="32" /></div>
         <div class="settings-field"><label for="settingsPdfMax">PDF max width</label><input id="settingsPdfMax" type="number" min="224" max="1024" step="32" /></div>
         <div class="settings-field"><label for="settingsVideoMax">Video max width</label><input id="settingsVideoMax" type="number" min="224" max="1024" step="32" /></div>
@@ -266,10 +197,9 @@ body::before {
         <div class="settings-field"><label for="settingsVoiceThreshold">Voice threshold</label><input id="settingsVoiceThreshold" type="number" min="0.002" max="0.2" step="0.002" /></div>
         <div class="settings-field"><label for="settingsSilenceMs">Silence stop ms</label><input id="settingsSilenceMs" type="number" min="300" max="3000" step="50" /></div>
         <div class="settings-field"><label for="settingsMinSpeechMs">Min speech ms</label><input id="settingsMinSpeechMs" type="number" min="250" max="2000" step="50" /></div>
-        <div class="settings-field"><label for="settingsBargeIn">Interrupt while assistant speaks</label><select id="settingsBargeIn"><option value="1">On</option><option value="0">Off</option></select><div class="settings-help">If the assistant interrupts itself from speaker echo, turn this off or increase sensitivity.</div></div>
-        <div class="settings-field"><label for="settingsBargeInSensitivity">Barge-in sensitivity</label><input id="settingsBargeInSensitivity" type="number" min="1.0" max="3.0" step="0.05" /><div class="settings-help">Higher = harder to interrupt, lower = easier to interrupt.</div></div>
+        <div class="settings-field"><label for="settingsBargeIn">Interrupt while assistant speaks</label><select id="settingsBargeIn"><option value="1">On</option><option value="0">Off</option></select></div>
+        <div class="settings-field"><label for="settingsBargeInSensitivity">Barge-in sensitivity</label><input id="settingsBargeInSensitivity" type="number" min="1.0" max="3.0" step="0.05" /></div>
       </div>
-      <div class="settings-help">Live capture writes screen/camera/video frames into a ring buffer. In Auto mode, frames are sent only when the prompt asks for visual context, which is much faster. For persistent AI Studio-like behavior, set Vision send mode = Always.</div>
     </div>
     <div class="modal-footer">
       <button id="resetSettingsBtn" class="btn danger">reset settings</button>
@@ -336,79 +266,51 @@ body::before {
 </div>
 <script>
 'use strict';
+/* ══ 1. CONFIG ══ */
 const CONFIG = Object.freeze({
-  STORAGE_KEYS: { SETTINGS: 'parlor.jarvis.settings.v48', CHATS: 'parlor.jarvis.chats.v8', ACTIVE_CHAT: 'parlor.jarvis.activeChat.v8', AUDIO_OWNER: 'parlor.audio.owner' },
+  STORAGE_KEYS: { SETTINGS: 'ailo.settings.v61', CHATS: 'ailo.chats.v8', ACTIVE_CHAT: 'ailo.activeChat.v8', AUDIO_OWNER: 'ailo.audio.owner' },
   CDN: { PDF_JS: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.mjs', PDF_WORKER: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.mjs' },
-  WEBSOCKET: { RECONNECT_DELAY_MS: 2000, HEARTBEAT_INTERVAL_MS: 15000, PONG_TIMEOUT_MS: 45000 },
-  WATCHDOG: { CHECK_INTERVAL_MS: 850, AUTO_STT_STUCK_TIMEOUT_MS: 6500, STALE_RECORDING_TIMEOUT_MS: 4500, STT_STARTING_TIMEOUT_MS: 4500, STT_NO_RESULT_TIMEOUT_MS: 15000, STT_STALE_RESULT_TIMEOUT_MS: 18000 },
-  TIMERS: {
-    STT_RESTART_AFTER_SEND_MS: 350, STT_RESTART_AFTER_ERROR_MS: 450, STT_RESTART_AFTER_END_MS: 220,
-    STT_RESTART_AFTER_NOT_ALLOWED_MS: 2000, MIC_FINALIZE_DELAY_MS: 220, STT_FINAL_WAIT_MS: 160,
-    AUTO_STT_SEND_LOCK_MS: 1200, AUTO_STT_SUPPRESS_MS: 1800, AUTO_STT_FINAL_SEND_MS: 350,
-    AUTO_STT_DEDUP_MS: 2500, AUTO_MIC_RESTART_AFTER_SEND_MS: 900, AUTO_MIC_RESTART_AFTER_RAW_MS: 450,
-    AUTO_MIC_RESTART_AFTER_FINISH_MS: 250, AUTO_MIC_RESTART_AFTER_NO_SPEECH_MS: 300,
-    AUTO_MIC_INIT_DELAY_MS: 700, AUTO_MIC_LISTENING_DELAY_MS: 500, BROWSER_TTS_GAP_MS: 35,
-    BROWSER_TTS_RESTART_MS: 150, SERVER_TTS_AUTOMIC_DELAY_MS: 900, TEXT_FINAL_STATE_CHECK_MS: 120,
-    AUDIO_DRAIN_POLL_MS: 80, LIVE_FRAME_INITIAL_DELAY_MS: 80, SUPPRESS_AFTER_SPEAK_MS: 600,
-    TTS_BUFFER_TIMEOUT_MS: 650, TTS_PLAYBACK_LEAD_S: 0.14, TTS_CHUNK_OVERLAP_S: 0.006, TTS_CHUNK_MIN_START_S: 0.010, ECHO_TAIL_MS: 700,
-  },
-  AUDIO: { DEFAULT_SAMPLE_RATE: 24000, RECORD_SAMPLE_RATE: 48000, TARGET_WAV_RATE: 16000, SCRIPT_PROCESSOR_BUFFER: 4096, VAD_BUFFER_SIZE: 2048, NOISE_FLOOR_INITIAL: 0.006, NOISE_FLOOR_DECAY: 0.985, NOISE_FLOOR_LEARN_RATE: 0.015, NOISE_FLOOR_MULTIPLIER: 4.0, MIN_NORMAL_THRESHOLD: 0.018, HOT_FRAMES_TO_START: 3, PRE_ROLL_FRAMES: 48, TRIM_THRESHOLD: 0.006, TRIM_PAD_S: 0.018, TRIM_MIN_DURATION_S: 0.08, FADE_DURATION_S: 0.010, MIN_RAW_DURATION_S: 0.12, WAV_BYTE_RATE: 32000, WAV_HEADER_SIZE: 44 },
+  WEBSOCKET: { RECONNECT_DELAY_MS: 2000, HEARTBEAT_INTERVAL_MS: 15000, PONG_TIMEOUT_MS: 45000, MAX_RECONNECT_DELAY_MS: 30000 },
+  TIMERS: { MIC_FINALIZE_DELAY_MS: 220, AUTO_MIC_INIT_DELAY_MS: 700, AUTO_MIC_LISTENING_DELAY_MS: 500, SERVER_TTS_AUTOMIC_DELAY_MS: 900, AUDIO_DRAIN_POLL_MS: 80, LIVE_FRAME_INITIAL_DELAY_MS: 80, SUPPRESS_AFTER_SPEAK_MS: 600, TTS_BUFFER_TIMEOUT_MS: 650, TTS_PLAYBACK_LEAD_S: 0.15, TTS_CHUNK_OVERLAP_S: 0.006, TTS_CHUNK_MIN_START_S: 0.010, BARGE_IN_GRACE_MS: 800, PROCESSING_WATCHDOG_MS: 30000 },
+  AUDIO: { DEFAULT_SAMPLE_RATE: 24000, TARGET_WAV_RATE: 16000, SCRIPT_PROCESSOR_BUFFER: 4096, VAD_BUFFER_SIZE: 2048, NOISE_FLOOR_INITIAL: 0.006, NOISE_FLOOR_DECAY: 0.985, NOISE_FLOOR_LEARN_RATE: 0.015, NOISE_FLOOR_MULTIPLIER: 4.0, MIN_NORMAL_THRESHOLD: 0.018, HOT_FRAMES_TO_START: 3, PRE_ROLL_FRAMES: 10, MIN_RAW_DURATION_S: 0.12, WAV_HEADER_SIZE: 44, CHUNK_SECONDS: 3.0, MIN_CHUNK_SAMPLES: 4800, MIN_TAIL_SAMPLES: 1600 },
+  BARGE: { WINDOW: 10, HITS: 6, MULT: 1.2 },
   VISION: { CAMERA_WIDTH: 960, CAMERA_HEIGHT: 540, JPEG_QUALITY_LIVE: 0.68, JPEG_QUALITY_PDF: 0.82, JPEG_QUALITY_IMAGE: 0.82, PDF_RENDER_SCALE: 1.45, MAX_LIVE_FRAMES: 16, MAX_UPLOADED_IMAGES: 8, FRAME_BUFFER_MULTIPLIER: 4, FRAME_BUFFER_MIN: 4, FRAME_BUFFER_MAX: 48 },
-  STT: { ECHO_WORD_THRESHOLD: 0.35, SHORT_WORD_LENGTH: 2, MIN_BARGE_WORDS: 2, MIN_HEARD_LENGTH: 3, BROWSER_TTS_CHUNK_MIN: 12, BROWSER_TTS_CHUNK_MAX: 220, BROWSER_TTS_FORCE_CUT: 180, BROWSER_TTS_MIN_SPLIT: 60 },
   CHAT: { MAX_PERSISTED: 60, TITLE_MAX_LENGTH: 42 },
-  PATTERNS: {
-    VISUAL_INTENT: /(экран|видишь|видно|посмотри|смотри|покажи|что\s+(?:это|там|тут|здесь)|здесь|тут|это\s+что|на\s+этом|камера|картин|фото|изображ|цвет|pdf|пдф|страниц|видео|screen|camera|image|photo|picture|video|document)/i,
-    STOP_WORDS: /^(стоп|хватит|молчи|замолчи|стой|пауза|перестань|прерви|остановись|нет|stop|wait|pause|shut up)\b/i,
-    STOP_WORDS_SHORT: /^(стоп|хватит|молчи|замолчи|стой|пауза|перестань|stop|wait|pause)$/i,
-    SPECIAL_TOKENS: /<\|\/?[^>\n]{0,80}?\|>/g,
-    THINK_TAGS: /<\/?(?:think|thought|analysis|reasoning)[^>]*>[\s\S]*?<\/(?:think|thought|analysis|reasoning)>/gi,
-    HTML_TAGS: /<[^>]*>/g, NULL_CHARS: /\x00/g, MULTI_SPACE: /[ \t]{2,}/g,
-    EMOJI: /[\u{1F300}-\u{1FAFF}\u{2700}-\u{27BF}]+/gu, MARKDOWN: /[*_`#>]+/g, NON_SPEECH: /[^\p{L}\p{N}\s]+/gu,
-  },
+  PATTERNS: { VISUAL_INTENT: /(экран|видишь|видно|посмотри|смотри|покажи|что\s+(?:это|там|тут|здесь)|здесь|тут|это\s+что|на\s+этом|камера|картин|фото|изображ|цвет|pdf|пдф|страниц|видео|screen|camera|image|photo|picture|video|document)/i, HTML_TAGS: /<[^>]*>/g },
 });
-
+/* ══ 2. STATE ══ */
 const State = {
   ws: null, appState: 'loading', wsHeartbeatTimer: null, wsLastPongAt: 0,
   mediaStream: null, micStream: null, screenStream: null, audioCtx: null, analyser: null,
   cameraEnabled: true, screenSending: true, pdfSending: true, videoSending: true, imageSending: true,
-  pdfDoc: null, pdfPage: 1, pdfPageCount: 0, pdfRenderTask: null,
-  videoObjectUrl: null, uploadedImages: [], imageObjectUrls: [], currentImageIndex: 0,
+  pdfDoc: null, pdfPage: 1, pdfPageCount: 0, pdfRenderTask: null, videoObjectUrl: null,
+  uploadedImages: [], imageObjectUrls: [],
   messages: [], msgCounter: 0, activeAssistantId: null, activeRequestId: null,
   streamSampleRate: CONFIG.AUDIO.DEFAULT_SAMPLE_RATE, streamNextTime: 0, streamSources: [],
   currentAudioMessageId: null, currentAudioRequestId: null, replayTargets: new Map(),
   messageAudioCache: new Map(), ignoredAudioRequests: new Set(), ignoredTextRequests: new Set(),
   ttsPendingAudioChunks: [], ttsPlaybackStarted: false, ttsAudioEnded: false, ttsBufferTimer: null,
-  lastAssistantTextForEcho: '', ttsEchoActive: false, speakingStartedAt: 0, speakingEndedAt: 0,
-  browserTtsBuffer: '', browserTtsQueue: [], browserTtsSpeaking: false,
+  speakingStartedAt: 0, speakingEndedAt: 0,
   recording: false, recSource: null, recProcessor: null, recZeroGain: null, recChunks: [],
-  recSampleRate: CONFIG.AUDIO.RECORD_SAMPLE_RATE, recRawActive: false, micHoldActive: false,
-  micPointerId: null, micStartedAt: 0, micFinalizing: false, micFinalizeTimer: null,
-  speechRec: null, speechTranscript: '', speechRunning: false, speechStarting: false, speechLastStartAt: 0, speechLastResultAt: 0,
-  autoMicEnabled: false, autoMonitoring: false, autoRecording: false, autoSource: null, autoProcessor: null, autoZeroGain: null,
-  autoChunks: [], autoSampleRate: CONFIG.AUDIO.RECORD_SAMPLE_RATE, autoLastVoiceAt: 0, autoStartedAt: 0,
-  autoNoiseFloor: CONFIG.AUDIO.NOISE_FLOOR_INITIAL, autoHotFrames: 0, autoPreRoll: [], autoMicWatchdogTimer: null, autoSttOnlyMode: false,
-  autoSuppressUntil: 0, lastAutoSttSent: '', lastAutoSttAt: 0, autoSttDraft: '', autoSttLastAt: 0,
-  autoSttTimer: null, autoSttRestartTimer: null, autoSttSending: false, autoSttSendingAt: 0,
-  lastBargeCandidate: '', lastBargeCandidateAt: 0, bargeCandidateHits: 0, lastBargeInterruptAt: 0,
+  recSampleRate: 48000, micHoldActive: false, micFinalizing: false, micFinalizeTimer: null,
+  autoMicEnabled: false, autoMonitoring: false, autoRecording: false,
+  autoSource: null, autoProcessor: null, autoZeroGain: null,
+  autoSampleRate: 48000, autoLastVoiceAt: 0, autoStartedAt: 0,
+  autoNoiseFloor: CONFIG.AUDIO.NOISE_FLOOR_INITIAL, autoHotFrames: 0,
+  preRoll: [], utterFrames: [], sentSamples: 0, chunkSeq: 0,
+  bargeWindow: [], framePrefetched: false, processingWatchdog: null,
   liveFrameTimer: null, liveFrameSeq: 0, liveFrameBuffers: { camera: [], screen: [], video: [] },
   appSettings: null, chats: [], activeChatId: '', suppressChatSave: false,
 };
 const TAB_ID = `tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-
+let WS_RECONNECT_ATTEMPTS = 0;
+let sharedCanvas = null, sharedCtx = null, pdfjsPromise = null;
+/* ══ 3. UTILS ══ */
 const $ = (id) => document.getElementById(id);
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const clampNum = (v, d, lo, hi) => { v = Number(v); if (!Number.isFinite(v)) return d; return Math.max(lo, Math.min(hi, v)); };
 const nowId = () => ++State.msgCounter;
 const escapeHtml = (s) => String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const textOfMessage = (m) => (m.text || '').replace(CONFIG.PATTERNS.HTML_TAGS, '').trim();
-function normalizeSpeechText(s = '') { return String(s || '').toLowerCase().replace(/[ё]/g, 'е').replace(CONFIG.PATTERNS.NON_SPEECH, ' ').replace(/\s+/g, ' ').trim(); }
-function cleanIncomingText(text, { final = false } = {}) {
-  text = String(text || '').replace(CONFIG.PATTERNS.NULL_CHARS, ' ');
-  text = text.replace(CONFIG.PATTERNS.SPECIAL_TOKENS, '').replace(CONFIG.PATTERNS.THINK_TAGS, '').replace(CONFIG.PATTERNS.MULTI_SPACE, ' ');
-  return final ? text.trim() : text;
-}
-function cleanForBrowserTts(s = '') { return String(s || '').replace(CONFIG.PATTERNS.EMOJI, '').replace(CONFIG.PATTERNS.MARKDOWN, '').replace(/\s+/g, ' ').trim(); }
-function chooseBetterTranscript(a = '', b = '') { const aa = normalizeSpeechText(a), bb = normalizeSpeechText(b); if (bb.length > aa.length) return b; return a || b || ''; }
 function resampleFloat32(input, fromRate, toRate = CONFIG.AUDIO.TARGET_WAV_RATE) {
   if (fromRate === toRate) return input;
   const ratio = fromRate / toRate, outLen = Math.round(input.length / ratio), out = new Float32Array(outLen);
@@ -420,113 +322,84 @@ function float32ToWavBase64(samples) {
   const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
   w(0, 'RIFF'); v.setUint32(4, 36 + samples.length * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
   v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
-  v.setUint32(24, CONFIG.AUDIO.TARGET_WAV_RATE, true); v.setUint32(28, CONFIG.AUDIO.WAV_BYTE_RATE, true);
+  v.setUint32(24, CONFIG.AUDIO.TARGET_WAV_RATE, true); v.setUint32(28, CONFIG.AUDIO.TARGET_WAV_RATE * 2, true);
   v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, samples.length * 2, true);
   for (let i = 0; i < samples.length; i++) { const s = Math.max(-1, Math.min(1, samples[i])); v.setInt16(CONFIG.AUDIO.WAV_HEADER_SIZE + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true); }
   const bytes = new Uint8Array(buf); let bin = ''; for (const b of bytes) bin += String.fromCharCode(b); return btoa(bin);
 }
-function estimateWavSecondsFromBase64(b64) { try { const byteLen = Math.floor(String(b64 || '').length * 3 / 4); return Math.max(0, Math.round(((byteLen - CONFIG.AUDIO.WAV_HEADER_SIZE) / CONFIG.AUDIO.WAV_BYTE_RATE) * 10) / 10); } catch { return 0; } }
 function rmsOf(buf) { let sum = 0; for (let i = 0; i < buf.length; i++) { const v = buf[i]; sum += v * v; } return Math.sqrt(sum / Math.max(1, buf.length)); }
-function trimAndFadePcm(f32, sampleRate) {
-  if (!f32 || !f32.length) return f32;
-  const threshold = CONFIG.AUDIO.TRIM_THRESHOLD, pad = Math.max(1, Math.floor(sampleRate * CONFIG.AUDIO.TRIM_PAD_S));
-  let start = 0, end = f32.length - 1;
-  while (start < f32.length && Math.abs(f32[start]) < threshold) start++;
-  while (end > start && Math.abs(f32[end]) < threshold) end--;
-  start = Math.max(0, start - pad); end = Math.min(f32.length - 1, end + pad);
-  if (end <= start + sampleRate * CONFIG.AUDIO.TRIM_MIN_DURATION_S) { start = 0; end = f32.length - 1; }
-  let out = new Float32Array(f32.subarray(start, end + 1));
-  const fadeN = Math.min(Math.floor(sampleRate * CONFIG.AUDIO.FADE_DURATION_S), Math.floor(out.length / 4));
-  for (let i = 0; i < fadeN; i++) { const g = i / Math.max(1, fadeN); out[i] *= g; out[out.length - 1 - i] *= g; }
-  return out;
-}
-function frameHash(blob) { return blob ? `${blob.length}:${blob.slice(0, 24)}:${blob.slice(-24)}` : ''; }
-
+function totalSamples(frames) { let t = 0; for (const f of frames) t += f.length; return t; }
+function concatFrames(frames) { const out = new Float32Array(totalSamples(frames)); let off = 0; for (const f of frames) { out.set(f, off); off += f.length; } return out; }
+function frameHash(blob) { return blob ? `${blob.length}:${blob.slice(0, 24)}` : ''; }
+/* ══ 4. SETTINGS ══ */
 const DEFAULT_SETTINGS = Object.freeze({
   wsUrl: '', voice: '', temperature: 1.0, top_p: 1.0, top_k: 0, max_output_tokens: 0, historyMessages: 20,
   cameraMax: 384, screenMax: 384, pdfMax: 448, videoMax: 384, imageMax: 512,
-  liveFps: 1.0, liveFrames: 2, autoVoice: false, startAutoWithScreen: true, voiceThreshold: 0.04, silenceStopMs: 650, minSpeechMs: 400,
-  bargeIn: 1, bargeInGraceMs: 250, bargeInSensitivity: 1.35, attachCameraAlways: 0, visionMode: 'auto',
-  browserStt: 1, sttLang: 'en-US', sendRawAudio: 0, audioInputMode: 'stt', ttsMode: 'server', browserTtsRate: 1.0,
-  ttsEngine: 'supertonic', sileroSpeaker: 'baya', sileroSpeed: 1.0,
+  liveFps: 1.0, liveFrames: 2, autoVoice: false, startAutoWithScreen: true,
+  voiceThreshold: 0.02, silenceStopMs: 650, minSpeechMs: 400,
+  bargeIn: 1, bargeInSensitivity: 1.35, visionMode: 'auto',
+  audioPipeline: 'native', sttModel: 'turbo',
+  ttsEngine: 'silero', sileroSpeaker: 'xenia', sileroSpeed: 1.0,
 });
 const Settings = {
   load() { try { return { ...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SETTINGS) || '{}') || {}) }; } catch { return { ...DEFAULT_SETTINGS }; } },
   save() { localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify(State.appSettings)); },
   defaultWsUrl() { return `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`; },
   getActiveWsUrl() { return (State.appSettings.wsUrl || '').trim() || this.defaultWsUrl(); },
-  ttsMode() { return 'server'; },
   fillForm() {
     const s = State.appSettings;
-    const map = { settingsWs: 'wsUrl', settingsVoice: 'voice', settingsSttLang: 'sttLang', settingsSileroSpeed: 'sileroSpeed', settingsTemp: 'temperature', settingsTopP: 'top_p', settingsTopK: 'top_k', settingsMaxTokens: 'max_output_tokens', settingsHistoryTurns: 'historyMessages', settingsCameraMax: 'cameraMax', settingsScreenMax: 'screenMax', settingsPdfMax: 'pdfMax', settingsVideoMax: 'videoMax', settingsImageMax: 'imageMax', settingsLiveFps: 'liveFps', settingsLiveFrames: 'liveFrames', settingsVoiceThreshold: 'voiceThreshold', settingsSilenceMs: 'silenceStopMs', settingsMinSpeechMs: 'minSpeechMs', settingsBargeInSensitivity: 'bargeInSensitivity' };
+    const map = { settingsWs: 'wsUrl', settingsVoice: 'voice', settingsSileroSpeed: 'sileroSpeed', settingsTemp: 'temperature', settingsTopP: 'top_p', settingsTopK: 'top_k', settingsMaxTokens: 'max_output_tokens', settingsHistoryTurns: 'historyMessages', settingsCameraMax: 'cameraMax', settingsScreenMax: 'screenMax', settingsPdfMax: 'pdfMax', settingsVideoMax: 'videoMax', settingsImageMax: 'imageMax', settingsLiveFps: 'liveFps', settingsLiveFrames: 'liveFrames', settingsVoiceThreshold: 'voiceThreshold', settingsSilenceMs: 'silenceStopMs', settingsMinSpeechMs: 'minSpeechMs', settingsBargeInSensitivity: 'bargeInSensitivity' };
     for (const [id, k] of Object.entries(map)) { const el = $(id); if (el) el.value = s[k] ?? ''; }
     if ($('settingsAutoVoice')) $('settingsAutoVoice').value = s.autoVoice ? '1' : '0';
     if ($('settingsStartAutoWithScreen')) $('settingsStartAutoWithScreen').value = s.startAutoWithScreen ? '1' : '0';
-    if ($('settingsTtsEngine')) $('settingsTtsEngine').value = s.ttsEngine || 'supertonic';
-    if ($('settingsSileroSpeaker')) $('settingsSileroSpeaker').value = s.sileroSpeaker || 'baya';
-    if ($('settingsBrowserStt')) $('settingsBrowserStt').value = String(Number(s.browserStt ?? 1));
-    if ($('settingsSendRawAudio')) { const mode = s.audioInputMode || (Number(s.sendRawAudio || 0) ? 'native' : 'stt'); $('settingsSendRawAudio').value = ['stt', 'native', 'hybrid'].includes(mode) ? mode : 'stt'; }
-    if ($('settingsAttachCameraAlways')) $('settingsAttachCameraAlways').value = String(Number(s.attachCameraAlways ?? 0));
+    if ($('settingsTtsEngine')) $('settingsTtsEngine').value = s.ttsEngine || 'silero';
+    if ($('settingsSileroSpeaker')) $('settingsSileroSpeaker').value = s.sileroSpeaker || 'xenia';
     if ($('settingsVisionMode')) $('settingsVisionMode').value = s.visionMode || 'auto';
     if ($('settingsBargeIn')) $('settingsBargeIn').value = String(Number(s.bargeIn ?? 1));
+    if ($('settingsAudioPipeline')) $('settingsAudioPipeline').value = s.audioPipeline || 'native';
+    if ($('settingsSttModel')) $('settingsSttModel').value = s.sttModel || 'turbo';
   },
   readForm() {
     const s = State.appSettings;
     s.wsUrl = $('settingsWs')?.value.trim() || '';
     s.voice = $('settingsVoice')?.value.trim() || '';
-    s.ttsEngine = $('settingsTtsEngine')?.value || 'supertonic';
-    s.sileroSpeaker = $('settingsSileroSpeaker')?.value || 'baya';
-    s.sileroSpeed = clampNum($('settingsSileroSpeed')?.value, DEFAULT_SETTINGS.sileroSpeed, 0.85, 1.2);
-    s.sttLang = $('settingsSttLang')?.value.trim() || 'ru-RU';
-    s.browserStt = Number($('settingsBrowserStt')?.value ?? 1);
-    s.audioInputMode = $('settingsSendRawAudio')?.value || 'stt';
-    if (!['stt', 'native', 'hybrid'].includes(s.audioInputMode)) s.audioInputMode = 'stt';
-    s.sendRawAudio = s.audioInputMode === 'stt' ? 0 : 1;
-    s.browserStt = s.audioInputMode === 'native' ? 0 : 1;
-    s.attachCameraAlways = Number($('settingsAttachCameraAlways')?.value ?? 0);
+    s.ttsEngine = $('settingsTtsEngine')?.value || 'silero';
+    s.sileroSpeaker = $('settingsSileroSpeaker')?.value || 'xenia';
+    s.sileroSpeed = clampNum($('settingsSileroSpeed')?.value, 1.0, 0.85, 1.2);
+    s.audioPipeline = $('settingsAudioPipeline')?.value || 'native';
+    if (!['native', 'stt', 'hybrid'].includes(s.audioPipeline)) s.audioPipeline = 'native';
+    s.sttModel = $('settingsSttModel')?.value || 'turbo';
     s.visionMode = $('settingsVisionMode')?.value || 'auto';
-    s.temperature = clampNum($('settingsTemp')?.value, DEFAULT_SETTINGS.temperature, 0, 2);
-    s.top_p = clampNum($('settingsTopP')?.value, DEFAULT_SETTINGS.top_p, 0, 1);
-    s.top_k = clampNum($('settingsTopK')?.value, DEFAULT_SETTINGS.top_k, 0, 256);
-    s.max_output_tokens = clampNum($('settingsMaxTokens')?.value, DEFAULT_SETTINGS.max_output_tokens, -1, 32768);
-    s.historyMessages = clampNum($('settingsHistoryTurns')?.value, DEFAULT_SETTINGS.historyMessages, 2, 200);
-    s.cameraMax = clampNum($('settingsCameraMax')?.value, DEFAULT_SETTINGS.cameraMax, 224, 1024);
-    s.screenMax = clampNum($('settingsScreenMax')?.value, DEFAULT_SETTINGS.screenMax, 224, 1024);
-    s.pdfMax = clampNum($('settingsPdfMax')?.value, DEFAULT_SETTINGS.pdfMax, 224, 1024);
-    s.videoMax = clampNum($('settingsVideoMax')?.value, DEFAULT_SETTINGS.videoMax, 224, 1024);
-    s.imageMax = clampNum($('settingsImageMax')?.value, DEFAULT_SETTINGS.imageMax, 224, 1536);
-    s.liveFps = clampNum($('settingsLiveFps')?.value, DEFAULT_SETTINGS.liveFps, 0.2, 8);
-    s.liveFrames = clampNum($('settingsLiveFrames')?.value, DEFAULT_SETTINGS.liveFrames, 1, 24);
-    s.voiceThreshold = clampNum($('settingsVoiceThreshold')?.value, DEFAULT_SETTINGS.voiceThreshold, 0.002, 0.2);
-    s.silenceStopMs = clampNum($('settingsSilenceMs')?.value, DEFAULT_SETTINGS.silenceStopMs, 300, 3000);
-    s.minSpeechMs = clampNum($('settingsMinSpeechMs')?.value, DEFAULT_SETTINGS.minSpeechMs, 250, 2000);
+    s.temperature = clampNum($('settingsTemp')?.value, 1.0, 0, 2);
+    s.top_p = clampNum($('settingsTopP')?.value, 1.0, 0, 1);
+    s.top_k = clampNum($('settingsTopK')?.value, 0, 0, 256);
+    s.max_output_tokens = clampNum($('settingsMaxTokens')?.value, 0, -1, 32768);
+    s.historyMessages = clampNum($('settingsHistoryTurns')?.value, 20, 2, 200);
+    s.cameraMax = clampNum($('settingsCameraMax')?.value, 384, 224, 1024);
+    s.screenMax = clampNum($('settingsScreenMax')?.value, 384, 224, 1024);
+    s.pdfMax = clampNum($('settingsPdfMax')?.value, 448, 224, 1024);
+    s.videoMax = clampNum($('settingsVideoMax')?.value, 384, 224, 1024);
+    s.imageMax = clampNum($('settingsImageMax')?.value, 512, 224, 1536);
+    s.liveFps = clampNum($('settingsLiveFps')?.value, 1.0, 0.2, 8);
+    s.liveFrames = clampNum($('settingsLiveFrames')?.value, 2, 1, 24);
+    s.voiceThreshold = clampNum($('settingsVoiceThreshold')?.value, 0.02, 0.002, 0.2);
+    s.silenceStopMs = clampNum($('settingsSilenceMs')?.value, 650, 300, 3000);
+    s.minSpeechMs = clampNum($('settingsMinSpeechMs')?.value, 400, 250, 2000);
     s.autoVoice = $('settingsAutoVoice')?.value === '1';
     s.startAutoWithScreen = $('settingsStartAutoWithScreen')?.value !== '0';
     s.bargeIn = Number($('settingsBargeIn')?.value ?? 1);
-    s.bargeInSensitivity = clampNum($('settingsBargeInSensitivity')?.value, DEFAULT_SETTINGS.bargeInSensitivity, 1.0, 3.0);
-    s.ttsMode = 'server';
+    s.bargeInSensitivity = clampNum($('settingsBargeInSensitivity')?.value, 1.35, 1.0, 3.0);
     this.save(); Vision.restartLiveFrameRecorder(); AutoMic.setEnabled(State.appSettings.autoVoice);
   },
 };
-
+/* ══ 5. CHATS ══ */
 const Chats = {
   load() { try { const arr = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.CHATS) || '[]'); if (Array.isArray(arr) && arr.length) return arr; } catch {} return [{ id: 'chat-default', title: 'New chat', createdAt: Date.now(), updatedAt: Date.now(), systemPrompt: '', messages: [] }]; },
   persist() { localStorage.setItem(CONFIG.STORAGE_KEYS.CHATS, JSON.stringify(State.chats.slice(0, CONFIG.CHAT.MAX_PERSISTED))); },
   create(title) { const c = { id: 'chat-' + Date.now() + '-' + Math.random().toString(16).slice(2), title: title || 'New chat', createdAt: Date.now(), updatedAt: Date.now(), systemPrompt: '', messages: [] }; State.chats.unshift(c); this.persist(); return c; },
   current() { let c = State.chats.find(x => x.id === State.activeChatId); if (!c) { c = this.create('New chat'); State.activeChatId = c.id; } return c; },
-  saveActive() {
-    if (State.suppressChatSave) return;
-    const c = this.current();
-    c.messages = State.messages.filter(m => !m.pending).map(m => ({ id: m.id, role: m.role, text: m.text || '', meta: m.meta || '' }));
-    c.systemPrompt = $('systemPrompt')?.value || ''; c.updatedAt = Date.now();
-    this.persist(); this.renderList();
-  },
-  loadActive() {
-    const c = this.current(); State.suppressChatSave = true;
-    State.messages = (c.messages || []).map(m => ({ ...m, pending: false, id: nowId() }));
-    if ($('systemPrompt')) $('systemPrompt').value = c.systemPrompt || '';
-    UI.renderMessages(); State.suppressChatSave = false; this.renderList();
-  },
+  saveActive() { if (State.suppressChatSave) return; const c = this.current(); c.messages = State.messages.filter(m => !m.pending).map(m => ({ id: m.id, role: m.role, text: m.text || '', meta: m.meta || '' })); c.systemPrompt = $('systemPrompt')?.value || ''; c.updatedAt = Date.now(); this.persist(); this.renderList(); },
+  loadActive() { const c = this.current(); State.suppressChatSave = true; State.messages = (c.messages || []).map(m => ({ ...m, pending: false, id: nowId() })); if ($('systemPrompt')) $('systemPrompt').value = c.systemPrompt || ''; UI.renderMessages(); State.suppressChatSave = false; this.renderList(); },
   maybeTitle(text) { const c = this.current(); if (!c || (c.title && c.title !== 'New chat')) return; const t = String(text || '').trim().replace(/\s+/g, ' ').slice(0, CONFIG.CHAT.TITLE_MAX_LENGTH); if (t) { c.title = t; this.persist(); this.renderList(); } },
   renderList() {
     const list = $('chatList'); if (!list) return; list.innerHTML = '';
@@ -542,7 +415,7 @@ const Chats = {
     }
   },
 };
-
+/* ══ 6. UI ══ */
 const STATE_COLORS = {
   loading: ['#3a3d46', 'rgba(58,61,70,0.14)', 'Loading...'], listening: ['#4ade80', 'rgba(74,222,128,0.13)', 'Listening'],
   processing: ['#f59e0b', 'rgba(245,158,11,0.13)', 'Thinking...'], speaking: ['#818cf8', 'rgba(129,140,248,0.13)', 'Speaking'],
@@ -552,11 +425,12 @@ const UI = {
   setState(s) {
     if (s !== 'speaking' && State.appState === 'speaking') State.speakingEndedAt = Date.now();
     State.appState = s;
-    if (s === 'speaking') { try { if (State.speechRec && (State.speechRunning || State.speechStarting)) State.speechRec.stop(); } catch {} State.speechRunning = false; State.speechStarting = false; }
     const [glow, glowDim, label] = STATE_COLORS[s] || STATE_COLORS.loading;
     document.documentElement.style.setProperty('--glow', glow); document.documentElement.style.setProperty('--glow-dim', glowDim);
     $('stateText').textContent = label;
     for (const el of [$('cameraTile'), $('screenTile'), $('pdfTile'), $('videoTile'), $('imageTile')]) { if (!el) continue; el.classList.remove('loading', 'listening', 'processing', 'speaking', 'recording'); el.classList.add(s === 'recording' ? 'listening' : s); }
+    clearTimeout(State.processingWatchdog);
+    if (s === 'processing') State.processingWatchdog = setTimeout(() => { if (State.appState === 'processing') { UI.setState('listening'); UI.setStatus('connected', 'Connected'); } }, CONFIG.TIMERS.PROCESSING_WATCHDOG_MS);
   },
   setStatus(cls, text) { const el = $('status'); el.className = `status-pill ${cls}`; el.textContent = text; },
   renderMessages() {
@@ -576,25 +450,32 @@ const UI = {
     }
     $('transcript').scrollTop = $('transcript').scrollHeight; Chats.saveActive();
   },
-  addMessage(role, text, meta = '', pending = false) {
-    const m = { id: nowId(), role, text, meta, pending, audioChunks: [], audioSampleRate: 0 };
-    State.messages.push(m); this.renderMessages(); return m.id;
-  },
-  updateMessage(id, patch) { const m = State.messages.find(x => x.id === id); if (m) { Object.assign(m, patch); this.renderMessages(); } },
-  // Инкрементальный апдейт активного пузыря ВО ВРЕМЯ стрима: правим только его DOM,
-  // НЕ пересоздавая весь чат. Это и есть фикс мерцания/«ЛСД» при печати.
-  appendStreaming(id, { text = null, finalizePending = false } = {}) {
-    const m = State.messages.find(x => x.id === id); if (!m) return;
-    if (text != null) m.text = text;
-    if (finalizePending) m.pending = false;
+  addMessage(role, text, meta = '', pending = false) { const m = { id: nowId(), role, text, meta, pending, audioChunks: [], audioSampleRate: 0 }; State.messages.push(m); this.renderMessages(); return m.id; },
+  updateMessage(id, patch) {
+    const m = State.messages.find(x => x.id === id);
+    if (!m) return;
+    Object.assign(m, patch);
+    // Инкрементально: обновляем только этот пузырь
     const el = $('messages').querySelector(`.msg[data-id="${id}"]`);
-    if (!el) { this.renderMessages(); return; }
-    const body = el.querySelector('.msg-body');
-    if (body) {
-      if (body.querySelector('.loading-dots')) body.innerHTML = escapeHtml(m.text || '');
-      else body.textContent = m.text || '';
+    if (el) {
+      el.classList.toggle('pending', !!m.pending);
+      const body = el.querySelector('.msg-body');
+      if (body) {
+        if (m.pending) {
+          body.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span>';
+        } else {
+          body.textContent = m.text;
+        }
+      }
+      const oldMeta = el.querySelector('.meta');
+      if (m.meta) {
+        if (oldMeta) oldMeta.textContent = m.meta;
+        else { const d = document.createElement('div'); d.className = 'meta'; d.textContent = m.meta; el.appendChild(d); }
+      } else if (oldMeta) oldMeta.remove();
+      $('transcript').scrollTop = $('transcript').scrollHeight;
+    } else {
+      this.renderMessages();
     }
-    const tr = $('transcript'); tr.scrollTop = tr.scrollHeight;
   },
   deleteMessage(id) { State.messages = State.messages.filter(m => m.id !== id); this.renderMessages(); },
   editMessage(id) { const m = State.messages.find(x => x.id === id); if (!m) return; const next = prompt('Edit message:', m.text || ''); if (next !== null) { m.text = next; m.pending = false; this.renderMessages(); } },
@@ -603,98 +484,116 @@ const UI = {
   openSettings() { Settings.fillForm(); $('settingsBackdrop')?.classList.add('open'); $('settingsModal')?.classList.add('open'); },
   closeSettings() { $('settingsBackdrop')?.classList.remove('open'); $('settingsModal')?.classList.remove('open'); },
 };
-
+/* ══ 7. AUDIO FOCUS ══ */
 const AudioFocus = {
-  channel: ('BroadcastChannel' in window) ? new BroadcastChannel('parlor-audio-focus') : null,
+  channel: ('BroadcastChannel' in window) ? new BroadcastChannel('ailo-audio-focus') : null,
   init() {
-    if (this.channel) { this.channel.onmessage = (ev) => { const d = ev.data || {}; if (d.type === 'takeover' && d.tabId && d.tabId !== TAB_ID) AudioPlayback.stop({ clearRequest: true }); }; }
+    if (this.channel) this.channel.onmessage = (ev) => { const d = ev.data || {}; if (d.type === 'takeover' && d.tabId && d.tabId !== TAB_ID) AudioPlayback.stop({ clearRequest: true }); };
     window.addEventListener('storage', (ev) => { if (ev.key !== CONFIG.STORAGE_KEYS.AUDIO_OWNER || !ev.newValue) return; try { const d = JSON.parse(ev.newValue); if (d.tabId && d.tabId !== TAB_ID) AudioPlayback.stop({ clearRequest: true }); } catch {} });
   },
-  claim(requestId = '') {
-    try { this.channel?.postMessage({ type: 'takeover', tabId: TAB_ID, requestId: requestId || '' }); } catch {}
-    try { localStorage.setItem(CONFIG.STORAGE_KEYS.AUDIO_OWNER, JSON.stringify({ tabId: TAB_ID, requestId: requestId || '', at: Date.now() })); } catch {}
-  },
+  claim(requestId = '') { try { this.channel?.postMessage({ type: 'takeover', tabId: TAB_ID, requestId }); } catch {} try { localStorage.setItem(CONFIG.STORAGE_KEYS.AUDIO_OWNER, JSON.stringify({ tabId: TAB_ID, requestId, at: Date.now() })); } catch {} },
 };
-
+/* ══ 8. WEBSOCKET ══ */
 const WS = {
   stopHeartbeat() { if (State.wsHeartbeatTimer) { clearInterval(State.wsHeartbeatTimer); State.wsHeartbeatTimer = null; } },
   startHeartbeat() {
     this.stopHeartbeat(); State.wsLastPongAt = Date.now();
     State.wsHeartbeatTimer = setInterval(() => {
       if (!State.ws || State.ws.readyState !== WebSocket.OPEN) return;
-      try { State.ws.send(JSON.stringify({ type: 'ping', t: Date.now() })); } catch (e) { console.warn('WS ping send failed', e); }
-      if (Date.now() - State.wsLastPongAt > CONFIG.WEBSOCKET.PONG_TIMEOUT_MS) { console.warn('WS pong timeout, forcing reconnect'); try { State.ws.close(4000, 'pong-timeout'); } catch {} }
+      try { State.ws.send(JSON.stringify({ type: 'ping', t: Date.now() })); } catch {}
+      if (Date.now() - State.wsLastPongAt > CONFIG.WEBSOCKET.PONG_TIMEOUT_MS) { try { State.ws.close(4000, 'pong-timeout'); } catch {} }
     }, CONFIG.WEBSOCKET.HEARTBEAT_INTERVAL_MS);
   },
+  send(payload) { if (State.ws && State.ws.readyState === WebSocket.OPEN) State.ws.send(JSON.stringify(payload)); },
   connect() {
     State.ws = new WebSocket(Settings.getActiveWsUrl());
-    State.ws.onopen = () => { console.info('[WS OPEN]', Settings.getActiveWsUrl()); UI.setStatus('connected', 'Connected'); UI.setState('listening'); this.startHeartbeat(); };
-    State.ws.onclose = (ev) => { console.warn('[WS CLOSE]', { code: ev.code, reason: ev.reason, wasClean: ev.wasClean }); this.stopHeartbeat(); UI.setStatus('disconnected', 'Disconnected'); setTimeout(() => this.connect(), CONFIG.WEBSOCKET.RECONNECT_DELAY_MS); };
-    State.ws.onerror = (ev) => { console.warn('[WS ERROR]', ev); UI.setStatus('disconnected', 'Disconnected'); };
+    State.ws.onopen = () => {
+      WS_RECONNECT_ATTEMPTS = 0;
+      UI.setStatus('connected', 'Connected');
+      if (State.appState !== 'loading') UI.setState('listening');
+      this.startHeartbeat();
+    };
+    State.ws.onclose = () => {
+      this.stopHeartbeat(); UI.setStatus('disconnected', 'Disconnected');
+      const delay = Math.min(CONFIG.WEBSOCKET.RECONNECT_DELAY_MS * Math.pow(2, WS_RECONNECT_ATTEMPTS), CONFIG.WEBSOCKET.MAX_RECONNECT_DELAY_MS);
+      WS_RECONNECT_ATTEMPTS++;
+      setTimeout(() => this.connect(), delay);
+    };
+    State.ws.onerror = () => UI.setStatus('disconnected', 'Disconnected');
     State.ws.onmessage = ({ data }) => this.handleMessage(JSON.parse(data));
+  },
+  handleThinkingDelta(msg) {
+    let el = $('messages').querySelector(`.msg.thinking[data-rid="${msg.request_id}"]`);
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'msg assistant thinking';
+      el.dataset.rid = msg.request_id;
+      el.style.opacity = '0.75';
+      el.innerHTML = '🧠 <span class="think-body"></span>';
+      $('messages').appendChild(el);
+    }
+    el.querySelector('.think-body').textContent += msg.text;
+    $('transcript').scrollTop = $('transcript').scrollHeight;
   },
   handleMessage(msg) {
     if (msg.type === 'pong') { State.wsLastPongAt = Date.now(); return; }
-    if (msg.type === 'app_status') { $('modelLabel').textContent = `${msg.backend || 'backend'} · ${msg.model_label || msg.model || 'model'}`; $('launcherLabel').textContent = `bat: ${msg.launcher_name || 'unknown'}`; return; }
     if (msg.type === 'text' || msg.type === 'text_final') { this.handleTextFinal(msg); return; }
     if (msg.type === 'text_delta') { this.handleTextDelta(msg); return; }
     if (msg.type === 'audio_start') { this.handleAudioStart(msg); return; }
     if (msg.type === 'audio_chunk') { this.handleAudioChunk(msg); return; }
     if (msg.type === 'audio_end') { this.handleAudioEnd(msg); return; }
+    if (msg.type === 'thinking_delta') { this.handleThinkingDelta(msg); return; }
     if (msg.type === 'transcription') { this.handleTranscription(msg); return; }
     if (msg.type === 'error') { this.handleError(msg); return; }
   },
   handleTextFinal(msg) {
     if (State.ignoredTextRequests.has(msg.request_id)) { if (msg.type === 'text_final') State.ignoredTextRequests.delete(msg.request_id); return; }
     const pendUser = State.messages.find(x => x.role === 'user' && x.requestId === msg.request_id && x.pending);
-    if (pendUser) { if (!pendUser.text) pendUser.text = '🎙 голос'; pendUser.pending = false; }
-    const txt = cleanIncomingText(msg.text || '', { final: true });
-    if (msg.transcription) { const last = [...State.messages].reverse().find(m => m.role === 'user' && m.pending); if (last) UI.updateMessage(last.id, { pending: false, text: msg.transcription, meta: last.meta }); }
+    if (msg.transcription && pendUser) { UI.updateMessage(pendUser.id, { pending: false, text: msg.transcription, meta: pendUser.meta }); }
+    else if (pendUser) { if (!pendUser.text) pendUser.text = '🎙 голос'; pendUser.pending = false; UI.updateMessage(pendUser.id, { pending: false }); }
+    const txt = msg.text || '';
     if (State.activeAssistantId) UI.updateMessage(State.activeAssistantId, { pending: false, text: txt, meta: `LLM ${msg.llm_time || '?'}s` });
     else State.activeAssistantId = UI.addMessage('assistant', txt, `LLM ${msg.llm_time || '?'}s`);
-    State.lastAssistantTextForEcho = txt || State.lastAssistantTextForEcho;
-    if (Settings.ttsMode() === 'browser') {
-      BrowserTTS.enqueue('', { force: true }); State.activeAssistantId = null; State.activeRequestId = null;
-      setTimeout(() => { if (!State.browserTtsSpeaking && !State.browserTtsQueue.length && State.appState === 'speaking') { State.ttsEchoActive = false; UI.setState('listening'); UI.setStatus('connected', 'Connected'); } }, CONFIG.TIMERS.TEXT_FINAL_STATE_CHECK_MS);
-    } else if (Settings.ttsMode() === 'off') { State.activeAssistantId = null; State.activeRequestId = null; UI.setState('listening'); UI.setStatus('connected', 'Connected'); }
-    if (Settings.ttsMode() === 'server' && State.autoMicEnabled) {
-      setTimeout(() => {
-        if (State.autoMicEnabled && !State.recording && !State.micHoldActive && !State.micFinalizing && !State.autoRecording && !State.streamSources.length && !State.ttsPlaybackStarted && State.appState !== 'speaking') {
-          UI.setState('listening'); AutoMic.clearDraft(); STT.restartSoon(CONFIG.TIMERS.TEXT_FINAL_STATE_CHECK_MS); UI.setStatus('connected', 'Auto Mic STT listening');
-        }
-      }, CONFIG.TIMERS.SERVER_TTS_AUTOMIC_DELAY_MS);
-    }
+    State.activeAssistantId = null; State.activeRequestId = null;
+    setTimeout(() => {
+      if (State.autoMicEnabled && !State.recording && !State.micHoldActive && !State.micFinalizing && !State.autoRecording && !State.streamSources.length && !State.ttsPlaybackStarted && State.appState !== 'speaking') {
+        UI.setState('listening'); UI.setStatus('connected', 'Auto Mic listening');
+      }
+    }, CONFIG.TIMERS.SERVER_TTS_AUTOMIC_DELAY_MS);
   },
   handleTextDelta(msg) {
     if (State.ignoredTextRequests.has(msg.request_id)) return;
-    const delta = cleanIncomingText(msg.text || '', { final: false });
     if (!State.activeAssistantId) State.activeAssistantId = UI.addMessage('assistant', '', '', true);
     const m = State.messages.find(x => x.id === State.activeAssistantId);
-    if (m) {
-      const nextText = cleanIncomingText((m.text || '') + delta, { final: false });
-      UI.appendStreaming(State.activeAssistantId, { text: nextText, finalizePending: true });
-      State.lastAssistantTextForEcho = nextText || State.lastAssistantTextForEcho;
-      BrowserTTS.enqueue(delta, { force: false });
-    }
+    if (!m) return;
+    m.text = (m.text || '') + (msg.text || '');
+    m.pending = false;
+    // Инкрементально: обновляем ТОЛЬКО активный пузырь, без перерисовки ленты.
+    const box = $('messages');
+    let el = box.querySelector(`.msg[data-id="${m.id}"] .msg-body`);
+    if (!el) { UI.renderMessages(); return; }
+    // Убираем точки "Loading..." если они ещё висят
+    const dots = el.querySelector('.loading-dots');
+    if (dots) dots.remove();
+    el.textContent = m.text;
+    // Авто-скролл вниз
+    $('transcript').scrollTop = $('transcript').scrollHeight;
   },
   handleAudioStart(msg) {
     if (State.ignoredAudioRequests.has(msg.request_id)) return;
     const replayTargetId = State.replayTargets.get(msg.request_id);
     if (!replayTargetId && State.activeRequestId && msg.request_id !== State.activeRequestId) { State.ignoredAudioRequests.add(msg.request_id); return; }
-    const shouldUseServerAudio = Settings.ttsMode() === 'server' || !!replayTargetId;
-    if (!shouldUseServerAudio) { State.ignoredAudioRequests.add(msg.request_id); return; }
     if (State.currentAudioRequestId && State.currentAudioRequestId !== msg.request_id) { State.ignoredAudioRequests.add(State.currentAudioRequestId); AudioPlayback.stop({ clearRequest: true }); }
     AudioFocus.claim(msg.request_id); AudioPlayback.resetBuffer();
     State.streamSampleRate = msg.sample_rate || CONFIG.AUDIO.DEFAULT_SAMPLE_RATE;
     State.currentAudioRequestId = msg.request_id; State.currentAudioMessageId = replayTargetId || State.activeAssistantId;
-    State.ttsEchoActive = true; State.speechTranscript = ''; UI.setState('speaking');
+    UI.setState('speaking');
     const m = State.messages.find(x => x.id === State.currentAudioMessageId);
-    if (m) { State.lastAssistantTextForEcho = m.text || State.lastAssistantTextForEcho; m.audioChunks = []; m.audioSampleRate = State.streamSampleRate; State.messageAudioCache.set(m.id, { chunks: m.audioChunks, sampleRate: State.streamSampleRate }); }
+    if (m) { m.audioChunks = []; m.audioSampleRate = State.streamSampleRate; State.messageAudioCache.set(m.id, { chunks: m.audioChunks, sampleRate: State.streamSampleRate }); }
   },
   handleAudioChunk(msg) {
     if (State.ignoredAudioRequests.has(msg.request_id)) return;
     if (State.currentAudioRequestId && msg.request_id !== State.currentAudioRequestId) { State.ignoredAudioRequests.add(msg.request_id); return; }
-    if (!State.currentAudioRequestId && State.activeRequestId && msg.request_id !== State.activeRequestId && !State.replayTargets.has(msg.request_id)) { State.ignoredAudioRequests.add(msg.request_id); return; }
     const targetId = State.currentAudioMessageId || State.replayTargets.get(msg.request_id) || State.activeAssistantId;
     const m = State.messages.find(x => x.id === targetId);
     if (m) { if (!Array.isArray(m.audioChunks)) m.audioChunks = []; m.audioChunks.push(msg.audio); m.audioSampleRate = State.streamSampleRate; State.messageAudioCache.set(m.id, { chunks: m.audioChunks, sampleRate: State.streamSampleRate }); }
@@ -707,19 +606,17 @@ const WS = {
     const replayTargetId = State.replayTargets.get(msg.request_id);
     const targetId = State.currentAudioMessageId || replayTargetId || State.activeAssistantId;
     const m = State.messages.find(x => x.id === targetId);
-    if (m && targetId === State.activeAssistantId) UI.updateMessage(State.activeAssistantId, { meta: `${m.meta || ''}${m.meta ? ' · ' : ''}TTS ${msg.tts_time || 0}s` });
-    else if (m) UI.renderMessages();
+    if (m) UI.updateMessage(m.id, { meta: `${m.meta || ''}${m.meta ? ' · ' : ''}TTS ${msg.tts_time || 0}s` });
     if (replayTargetId) State.replayTargets.delete(msg.request_id);
     if (!replayTargetId) { State.activeAssistantId = null; State.activeRequestId = null; }
     State.currentAudioMessageId = null;
     const finishWhenAudioDrained = () => {
-      if (State.ttsPendingAudioChunks.length && !State.ttsPlaybackStarted) AudioPlayback.startBuffered();
       if (State.streamSources.length || State.ttsPendingAudioChunks.length) { setTimeout(finishWhenAudioDrained, CONFIG.TIMERS.AUDIO_DRAIN_POLL_MS); return; }
-      AudioPlayback.clearBufferTimer(); State.ttsPlaybackStarted = false; State.ttsAudioEnded = false; State.ttsEchoActive = false; State.speechTranscript = '';
+      AudioPlayback.clearBufferTimer(); State.ttsPlaybackStarted = false; State.ttsAudioEnded = false;
       if (State.currentAudioRequestId === msg.request_id) State.currentAudioRequestId = null;
       if (State.appState === 'speaking' || State.appState === 'recording') UI.setState('listening');
-      if (State.autoMicEnabled) { AutoMic.clearDraft(); State.autoSttSending = false; State.autoSttSendingAt = 0; try { if (State.speechRec && (State.speechRunning || State.speechStarting)) State.speechRec.stop(); } catch {} STT.restartSoon(CONFIG.TIMERS.STT_RESTART_AFTER_END_MS); UI.setStatus('connected', 'Auto Mic STT listening'); }
-      else UI.setStatus('connected', 'Connected');
+      this.send({ type: 'ready' });
+      if (State.autoMicEnabled) UI.setStatus('connected', 'Auto Mic listening'); else UI.setStatus('connected', 'Connected');
     };
     finishWhenAudioDrained();
   },
@@ -727,17 +624,15 @@ const WS = {
     const rid = msg.request_id;
     let m = rid ? State.messages.find(x => x.role === 'user' && x.requestId === rid) : null;
     if (!m) m = [...State.messages].reverse().find(x => x.role === 'user' && x.pending);
-    if (m && msg.text) UI.updateMessage(m.id, { text: msg.text, pending: false });
+    if (m && (msg.text || msg.error)) UI.updateMessage(m.id, { text: msg.text || '🎙 (STT offline not ready)', pending: false });
   },
   handleError(msg) {
     if (State.activeAssistantId) UI.updateMessage(State.activeAssistantId, { pending: false, text: '[ERROR] ' + (msg.message || 'unknown') });
     else UI.addMessage('assistant', '[ERROR] ' + (msg.message || 'unknown'));
-    UI.setState('listening');
-    if (State.autoMicEnabled) { State.autoSttSending = false; State.autoSttSendingAt = 0; STT.restartSoon(CONFIG.TIMERS.STT_RESTART_AFTER_SEND_MS); UI.setStatus('connected', 'Auto Mic STT listening'); }
-    else UI.setStatus('connected', 'Connected');
+    UI.setState('listening'); UI.setStatus('connected', 'Connected');
   },
 };
-
+/* ══ 9. AUDIO PLAYBACK ══ */
 const AudioPlayback = {
   ensureCtx() { if (!State.audioCtx) { State.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); State.analyser = State.audioCtx.createAnalyser(); State.analyser.fftSize = 256; State.analyser.smoothingTimeConstant = 0.75; } if (State.audioCtx.state === 'suspended') State.audioCtx.resume(); },
   clearBufferTimer() { if (State.ttsBufferTimer) { clearTimeout(State.ttsBufferTimer); State.ttsBufferTimer = null; } },
@@ -747,8 +642,11 @@ const AudioPlayback = {
     AudioFocus.claim(State.currentAudioRequestId || State.activeRequestId || '');
     if (State.ttsPlaybackStarted) return;
     this.clearBufferTimer(); this.ensureCtx();
-    try { if (State.audioCtx && State.audioCtx.state === 'suspended') State.audioCtx.resume(); } catch {}
-    State.speakingStartedAt = Date.now(); State.streamNextTime = State.audioCtx.currentTime + CONFIG.TIMERS.TTS_PLAYBACK_LEAD_S;
+    const ctx = State.audioCtx;
+    const lead = CONFIG.TIMERS.TTS_PLAYBACK_LEAD_S;
+    const silent = ctx.createBuffer(1, Math.ceil(lead * ctx.sampleRate), ctx.sampleRate);
+    const silentSrc = ctx.createBufferSource(); silentSrc.buffer = silent; silentSrc.connect(ctx.destination); silentSrc.start(ctx.currentTime);
+    State.speakingStartedAt = Date.now(); State.streamNextTime = ctx.currentTime + lead;
     State.ttsPlaybackStarted = true; UI.setState('speaking');
     while (State.ttsPendingAudioChunks.length) this.queueChunk(State.ttsPendingAudioChunks.shift());
   },
@@ -763,9 +661,8 @@ const AudioPlayback = {
     this.ensureCtx();
     const bin = atob(base64Pcm), bytes = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    const int16 = new Int16Array(bytes.buffer); let f32 = new Float32Array(int16.length);
+    const int16 = new Int16Array(bytes.buffer); const f32 = new Float32Array(int16.length);
     for (let i = 0; i < int16.length; i++) f32[i] = int16[i] / 32768;
-    f32 = trimAndFadePcm(f32, State.streamSampleRate);
     const buf = State.audioCtx.createBuffer(1, f32.length, State.streamSampleRate); buf.getChannelData(0).set(f32);
     const src = State.audioCtx.createBufferSource(); src.buffer = buf;
     const gain = State.audioCtx.createGain(); gain.gain.value = 1.0;
@@ -776,363 +673,180 @@ const AudioPlayback = {
   },
   stop({ clearRequest = true } = {}) {
     for (const s of State.streamSources) { try { s.onended = null; } catch {} try { s.stop(0); } catch {} try { s.disconnect?.(); } catch {} }
-    State.streamSources = []; State.streamNextTime = 0; this.resetBuffer(); BrowserTTS.stop();
-    State.ttsEchoActive = false; State.ttsAudioEnded = false; State.ttsPlaybackStarted = false; State.currentAudioMessageId = null;
+    State.streamSources = []; State.streamNextTime = 0; this.resetBuffer();
     if (clearRequest) State.currentAudioRequestId = null;
   },
-  startStream() { this.stop(); this.ensureCtx(); State.speakingStartedAt = Date.now(); State.streamNextTime = State.audioCtx.currentTime + 0.06; UI.setState('speaking'); },
 };
-
-const BrowserTTS = {
-  supported() { return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window; },
-  pickVoice() { const voices = speechSynthesis.getVoices ? speechSynthesis.getVoices() : []; const lang = (State.appSettings.sttLang || 'ru-RU').slice(0, 2).toLowerCase(); return voices.find(v => (v.lang || '').toLowerCase().startsWith(lang)) || voices.find(v => /ru|russian/i.test((v.lang || '') + ' ' + (v.name || ''))) || voices[0] || null; },
-  extractChunks(force = false) {
-    const chunks = []; let b = State.browserTtsBuffer.replace(/\s+/g, ' ').trim();
-    while (b) {
-      let split = -1;
-      const m = b.match(new RegExp(`^(.{${CONFIG.STT.BROWSER_TTS_CHUNK_MIN},${CONFIG.STT.BROWSER_TTS_CHUNK_MAX}}?[.!?…])(?:\\s+|$)`, 'u'));
-      if (m) split = m[1].length;
-      if (split < 0 && (force || b.length >= CONFIG.STT.BROWSER_TTS_FORCE_CUT)) { const cut = Math.min(b.length, CONFIG.STT.BROWSER_TTS_CHUNK_MAX); const sp = b.lastIndexOf(' ', cut); split = sp > CONFIG.STT.BROWSER_TTS_MIN_SPLIT ? sp : cut; }
-      if (split < 0) break;
-      const part = cleanForBrowserTts(b.slice(0, split)); if (part) chunks.push(part); b = b.slice(split).trim();
-    }
-    State.browserTtsBuffer = b; return chunks;
-  },
-  enqueue(text, { force = false } = {}) { if (Settings.ttsMode() !== 'browser' || !this.supported()) return; if (text) State.browserTtsBuffer += text; const chunks = this.extractChunks(force); if (chunks.length) { State.browserTtsQueue.push(...chunks); this.pump(); } },
-  pump() {
-    if (Settings.ttsMode() !== 'browser' || !this.supported()) return;
-    if (State.browserTtsSpeaking || !State.browserTtsQueue.length) return;
-    const text = State.browserTtsQueue.shift(); if (!text) return;
-    const u = new SpeechSynthesisUtterance(text); const v = this.pickVoice(); if (v) u.voice = v;
-    u.lang = State.appSettings.sttLang || 'ru-RU'; u.rate = Number(State.appSettings.browserTtsRate || 1.0); u.pitch = 1.0; u.volume = 1.0;
-    State.browserTtsSpeaking = true; State.ttsEchoActive = true; UI.setState('speaking');
-    u.onend = u.onerror = () => {
-      State.browserTtsSpeaking = false;
-      if (State.browserTtsQueue.length) { setTimeout(() => this.pump(), CONFIG.TIMERS.BROWSER_TTS_GAP_MS); return; }
-      if (!State.activeAssistantId) { State.ttsEchoActive = false; State.speechTranscript = ''; if (State.appState === 'speaking') UI.setState('listening'); if (State.autoMicEnabled) setTimeout(() => { if (State.autoMicEnabled && !State.speechRunning && !State.recording && !State.autoRecording) STT.start(); }, CONFIG.TIMERS.BROWSER_TTS_RESTART_MS); }
-    };
-    try { speechSynthesis.speak(u); } catch (e) { State.browserTtsSpeaking = false; console.warn('Browser TTS failed', e); }
-  },
-  stop() { State.browserTtsBuffer = ''; State.browserTtsQueue = []; State.browserTtsSpeaking = false; try { if (this.supported()) speechSynthesis.cancel(); } catch {} },
-};
-
-const EchoCancel = {
-  currentAssistantText() { const m = State.activeAssistantId ? State.messages.find(x => x.id === State.activeAssistantId) : null; return m?.text || State.lastAssistantTextForEcho || ''; },
-  inEchoWindow() { return State.appState === 'speaking' || (Date.now() - State.speakingEndedAt < CONFIG.TIMERS.ECHO_TAIL_MS); },
-  cleanFromTranscript(heard = '') {
-    let raw = String(heard || '').trim(); if (!raw) return '';
-    const assistantNorm = normalizeSpeechText(this.currentAssistantText()); if (!assistantNorm) return raw;
-    const heardWords = normalizeSpeechText(raw).split(' ').filter(w => w.length > CONFIG.STT.SHORT_WORD_LENGTH); if (!heardWords.length) return raw;
-    const assistantWordSet = new Set(assistantNorm.split(' ').filter(w => w.length > CONFIG.STT.SHORT_WORD_LENGTH));
-    const echoHits = heardWords.filter(w => assistantWordSet.has(w)).length; const echoRatio = echoHits / heardWords.length;
-    if (echoRatio >= CONFIG.STT.ECHO_WORD_THRESHOLD) {
-      const words = raw.split(/\s+/);
-      const nonEchoWords = words.filter(w => { const normW = normalizeSpeechText(w); if (normW.length <= CONFIG.STT.SHORT_WORD_LENGTH) return true; return !assistantWordSet.has(normW); });
-      const resultText = nonEchoWords.join(' ').trim();
-      const meaningfulLeft = resultText.split(/\s+/).filter(w => normalizeSpeechText(w).length > CONFIG.STT.SHORT_WORD_LENGTH);
-      if (!meaningfulLeft.length) return '';
-      return resultText;
-    }
-    return raw;
-  },
-  isLikelyEcho(heard = '') { const cleaned = this.cleanFromTranscript(heard); return !cleaned || cleaned.trim().length === 0; },
-  shouldBarge(heard = '', isFinal = false) {
-    if (State.appState !== 'speaking' || !State.autoMicEnabled) return false;
-    const h = normalizeSpeechText(heard); if (!h || h.length < CONFIG.STT.MIN_HEARD_LENGTH) return false;
-    if (CONFIG.PATTERNS.STOP_WORDS.test(h)) return true;
-    if (Number(State.appSettings.bargeIn ?? 1) !== 1) return false;
-    if (Date.now() - State.speakingStartedAt < Number(State.appSettings.bargeInGraceMs || 250)) return false;
-    if (this.isLikelyEcho(h)) return false;
-    if (!isFinal) return false;
-    return h.split(' ').filter(Boolean).length >= CONFIG.STT.MIN_BARGE_WORDS;
-  },
-};
-
-const STT = {
-  supported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); },
-  restartSoon(delay = CONFIG.TIMERS.STT_RESTART_AFTER_END_MS) { if (State.autoSttRestartTimer) { clearTimeout(State.autoSttRestartTimer); State.autoSttRestartTimer = null; } State.autoSttRestartTimer = setTimeout(() => { State.autoSttRestartTimer = null; AutoMic.ensureListening(); }, delay); },
-  start() {
-    if (State.speechRunning || State.speechStarting) return;
-    State.speechTranscript = '';
-    if (!Number(State.appSettings.browserStt ?? 1)) return;
-    if (!this.supported()) { console.warn('Browser STT unsupported'); UI.setStatus('error', 'Browser STT unsupported'); return; }
-    try { if (State.speechRec) State.speechRec.abort(); } catch {}
-    State.speechRec = null; State.speechStarting = true; State.speechLastStartAt = Date.now();
-    try {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      State.speechRec = new SR(); State.speechRec.lang = State.appSettings.sttLang || 'ru-RU';
-      State.speechRec.continuous = true; State.speechRec.interimResults = true; State.speechRec.maxAlternatives = 1;
-      State.speechRec.onstart = () => { State.speechRunning = true; State.speechStarting = false; State.speechLastStartAt = Date.now(); State.speechLastResultAt = 0; if (State.recording) UI.setStatus('connected', 'Push mic: STT listening'); else if (State.autoMicEnabled) UI.setStatus('connected', 'Auto Mic STT listening'); };
-      State.speechRec.onresult = (ev) => {
-        State.speechLastResultAt = Date.now();
-        let finalText = '', interim = '';
-        for (let i = 0; i < ev.results.length; i++) { const txt = (ev.results[i][0]?.transcript || '').trim(); if (ev.results[i].isFinal) finalText += txt + ' '; else interim += txt + ' '; }
-        const heard = (finalText || interim).trim(); State.speechTranscript = heard;
-        const isFinalSpeech = !!finalText.trim(); const heardClean = normalizeSpeechText(heard);
-        if (!heardClean) { AutoMic.clearDraft({ toListening: true }); return; }
-        if (AutoMic.shouldMuteStt()) { AutoMic.clearDraft({ toListening: true }); return; }
-        if (State.autoMicEnabled && !State.micHoldActive && !State.recording && !State.micFinalizing && State.appState === 'listening') {
-          if (isFinalSpeech && heardClean.length >= 2) { State.autoSttDraft = heard; State.autoSttLastAt = Date.now(); AutoMic.scheduleSend(); }
-          return;
-        }
-        if (!State.micHoldActive && !State.recording && !State.micFinalizing && EchoCancel.shouldBarge(heard, isFinalSpeech)) {
-          Interrupt.request(true); State.autoHotFrames = 0; State.autoLastVoiceAt = Date.now();
-          if (isFinalSpeech && !CONFIG.PATTERNS.STOP_WORDS_SHORT.test(heardClean)) { State.autoSttDraft = heard; setTimeout(() => AutoMic.maybeSend({ force: true }), CONFIG.TIMERS.TEXT_FINAL_STATE_CHECK_MS); }
-        }
-      };
-      State.speechRec.onerror = (e) => {
-        const err = e.error || e.message || e; console.warn('Mic speech recognition error:', err);
-        State.speechRunning = false; State.speechStarting = false;
-        if (State.recording) UI.setStatus(err === 'not-allowed' ? 'error' : 'connected', err === 'not-allowed' ? 'Mic permission blocked' : 'Push mic: raw fallback');
-        if (State.autoMicEnabled) { UI.setStatus(err === 'not-allowed' ? 'error' : 'connected', err === 'not-allowed' ? 'Mic permission blocked' : 'Auto Mic raw fallback/listening'); this.restartSoon(err === 'not-allowed' ? CONFIG.TIMERS.STT_RESTART_AFTER_NOT_ALLOWED_MS : CONFIG.TIMERS.STT_RESTART_AFTER_ERROR_MS); }
-      };
-      State.speechRec.onend = () => { State.speechRunning = false; State.speechStarting = false; State.speechRec = null; if (State.autoMicEnabled && !State.autoSttSending && !State.recording && !State.micFinalizing) this.restartSoon(CONFIG.TIMERS.STT_RESTART_AFTER_END_MS); };
-      State.speechRec.start();
-    } catch (e) {
-      console.warn('Browser STT start failed:', e?.message || e);
-      State.speechRec = null; State.speechRunning = false; State.speechStarting = false;
-      if (State.autoMicEnabled) this.restartSoon(CONFIG.TIMERS.AUTO_MIC_RESTART_AFTER_SEND_MS);
-    }
-  },
-  stop() { const text = (State.speechTranscript || '').trim(); try { if (State.speechRec && (State.speechRunning || State.speechStarting)) State.speechRec.stop(); } catch {} State.speechRec = null; State.speechRunning = false; State.speechStarting = false; return text; },
-  async stopFinal(delay = CONFIG.TIMERS.STT_FINAL_WAIT_MS) {
-    const before = (State.speechTranscript || '').trim();
-    try { if (State.speechRec && (State.speechRunning || State.speechStarting)) State.speechRec.stop(); } catch {}
-    await sleep(delay);
-    const after = (State.speechTranscript || '').trim();
-    State.speechRec = null; State.speechRunning = false; State.speechStarting = false;
-    return chooseBetterTranscript(before, after);
-  },
-};
-
+/* ══ 10. AUTO MIC (RMS VAD + chunk streaming + barge-in) ══ */
 const AutoMic = {
-  clearDraft({ toListening = false } = {}) { State.autoSttDraft = ''; State.speechTranscript = ''; if (State.autoSttTimer) { clearTimeout(State.autoSttTimer); State.autoSttTimer = null; } if (toListening && State.appState === 'recording' && !State.recording && !State.autoRecording) UI.setState('listening'); },
-  clearSendTimer() { if (State.autoSttTimer) { clearTimeout(State.autoSttTimer); State.autoSttTimer = null; } },
-  shouldMuteStt() { return State.appState === 'speaking' || (Date.now() - State.speakingEndedAt < CONFIG.TIMERS.SUPPRESS_AFTER_SPEAK_MS); },
-  shouldKeepPaused() {
-    if (this.shouldMuteStt()) return true;
-    if (!State.autoMicEnabled) return true;
-    if (!Number(State.appSettings.browserStt ?? 1)) return true;
-    if (State.recording || State.micHoldActive || State.micFinalizing || State.autoRecording) return true;
-    if (State.appState === 'processing') return true;
-    if (State.appState === 'speaking' && Number(State.appSettings.bargeIn ?? 0) !== 1) return true;
-    return false;
-  },
-  ensureListening({ force = false } = {}) {
-    if (!State.autoMicEnabled) return;
-    if (!Number(State.appSettings.browserStt ?? 1)) return;
-    if (this.shouldMuteStt()) return;
-    if (!force && this.shouldKeepPaused()) return;
-    if (force) { try { if (State.speechRec) State.speechRec.abort(); } catch {} State.speechRec = null; State.speechRunning = false; State.speechStarting = false; }
-    if (!State.speechRunning && !State.speechStarting) STT.start();
-  },
-  maybeSend({ force = false } = {}) {
-    if (!State.autoMicEnabled || State.autoSttSending) return;
-    if (State.appState === 'processing') return;
-    if (this.shouldMuteStt()) { this.clearDraft({ toListening: true }); return; }
-    const draft = (State.autoSttDraft || State.speechTranscript || '').trim(); const clean = normalizeSpeechText(draft);
-    if (!clean || clean.length < 2) { if (force) this.clearDraft({ toListening: true }); return; }
-    if (EchoCancel.isLikelyEcho(clean)) { this.clearDraft({ toListening: true }); STT.restartSoon(CONFIG.TIMERS.STT_RESTART_AFTER_ERROR_MS); return; }
-    const now = Date.now();
-    const stopLike = CONFIG.PATTERNS.STOP_WORDS.test(clean);
-    const enoughWords = clean.split(' ').filter(Boolean).length >= CONFIG.STT.MIN_BARGE_WORDS;
-    const enoughTime = now - State.autoSttLastAt >= Number(State.appSettings.silenceStopMs || 900);
-    if (!force && !stopLike && !enoughWords && !enoughTime) return;
-    if (clean === State.lastAutoSttSent && now - State.lastAutoSttAt < CONFIG.TIMERS.AUTO_STT_DEDUP_MS) { this.clearDraft({ toListening: true }); return; }
-    State.autoSttSending = true; State.autoSttSendingAt = now; State.lastAutoSttSent = clean; State.lastAutoSttAt = now;
-    State.autoSuppressUntil = now + CONFIG.TIMERS.AUTO_STT_SUPPRESS_MS;
-    try { if (State.speechRec && State.speechRunning) State.speechRec.stop(); } catch {}
-    State.speechRec = null; State.speechRunning = false; State.speechStarting = false;
-    const textToSend = draft; this.clearDraft(); UI.setState('processing');
-    SendPayload.execute({ text: textToSend, suppressUserEcho: false });
-    setTimeout(() => { State.autoSttSending = false; State.autoSttSendingAt = 0; if (State.autoMicEnabled) STT.restartSoon(CONFIG.TIMERS.STT_RESTART_AFTER_SEND_MS); }, CONFIG.TIMERS.AUTO_STT_SEND_LOCK_MS);
-  },
-  scheduleSend() { this.clearSendTimer(); State.autoSttTimer = setTimeout(() => this.maybeSend({ force: true }), Number(State.appSettings.silenceStopMs || 900)); },
+  shouldMute() { return State.appState === 'speaking' || (Date.now() - State.speakingEndedAt < CONFIG.TIMERS.SUPPRESS_AFTER_SPEAK_MS); },
   updateUI() { const on = !!State.autoMicEnabled; for (const id of ['autoMicBtn', 'screenAutoMicBtn']) { const el = $(id); if (el) { el.classList.toggle('live-on', on); el.textContent = on ? 'Auto Mic On' : 'Auto Mic'; } } State.appSettings.autoVoice = on; Settings.save(); },
   async setEnabled(on) {
     State.autoMicEnabled = !!on; this.updateUI();
-    if (State.autoMicEnabled) {
-      this.clearDraft(); State.autoSttSending = false; State.autoSttSendingAt = 0;
-      State.autoSttOnlyMode = Number(State.appSettings.browserStt ?? 1) === 1; this.startWatchdog();
-      if (State.autoSttOnlyMode) { this.stopRawMonitor(); UI.setState('listening'); this.ensureListening({ force: true }); STT.restartSoon(CONFIG.TIMERS.AUTO_MIC_RESTART_AFTER_FINISH_MS); UI.setStatus('connected', 'Auto Mic STT listening'); return; }
-      try { await this.startRawMonitor(); } catch (e) { console.warn('Auto Mic raw fallback failed:', e); }
-      UI.setStatus('connected', 'Auto Mic raw listening');
-    } else { this.stopWatchdog(); this.clearDraft(); State.autoSttSending = false; State.autoSttSendingAt = 0; State.autoSttOnlyMode = false; this.stopRawMonitorFull(); UI.setStatus('connected', 'Connected'); }
+    if (on) {
+      this.resetCapture();
+      try { await this.startRawMonitor(); UI.setStatus('connected', 'Auto Mic listening'); }
+      catch (e) { console.warn('Auto Mic failed:', e); this.stopRawMonitor(); State.autoMicEnabled = false; this.updateUI(); UI.setStatus('error', 'Mic unavailable'); }
+    }
+    else { this.stopRawMonitor(); UI.setStatus('connected', 'Connected'); }
   },
-  startWatchdog() {
-    if (State.autoMicWatchdogTimer) return;
-    State.autoMicWatchdogTimer = setInterval(() => {
-      if (!State.autoMicEnabled) return;
-      const now = Date.now();
-      if (State.autoSttSending && State.autoSttSendingAt && now - State.autoSttSendingAt > CONFIG.WATCHDOG.AUTO_STT_STUCK_TIMEOUT_MS) { console.warn('Auto Mic: autoSttSending stuck, resetting'); State.autoSttSending = false; State.autoSttSendingAt = 0; this.clearDraft({ toListening: true }); }
-      const lastActivity = Math.max(State.speechLastResultAt || 0, State.autoSttLastAt || 0, State.speechLastStartAt || 0, State.autoStartedAt || 0);
-      if (State.appState === 'recording' && !State.recording && !State.micHoldActive && !State.micFinalizing && !State.autoRecording && lastActivity && now - lastActivity > CONFIG.WATCHDOG.STALE_RECORDING_TIMEOUT_MS) { console.warn('Auto Mic: stale recording state, resetting'); this.clearDraft({ toListening: true }); UI.setState('listening'); }
-      if (this.shouldKeepPaused()) return;
-      if (State.speechStarting && State.speechLastStartAt && now - State.speechLastStartAt > CONFIG.WATCHDOG.STT_STARTING_TIMEOUT_MS) { console.warn('Auto Mic: STT stuck starting, force restart'); this.ensureListening({ force: true }); return; }
-      if (State.speechRunning && !State.speechLastResultAt && State.speechLastStartAt && now - State.speechLastStartAt > CONFIG.WATCHDOG.STT_NO_RESULT_TIMEOUT_MS) { console.warn('Auto Mic: STT running without results, force restart'); this.ensureListening({ force: true }); return; }
-      if (State.speechRunning && State.speechLastResultAt && now - State.speechLastResultAt > CONFIG.WATCHDOG.STT_STALE_RESULT_TIMEOUT_MS) { console.warn('Auto Mic: STT stale, force restart'); this.ensureListening({ force: true }); return; }
-      if (!State.speechRunning && !State.speechStarting) this.ensureListening();
-    }, CONFIG.WATCHDOG.CHECK_INTERVAL_MS);
+  resetCapture() { State.autoRecording = false; State.autoHotFrames = 0; State.preRoll = []; State.utterFrames = []; State.sentSamples = 0; State.chunkSeq = 0; State.bargeWindow = []; },
+  stopRawMonitor() { State.autoMonitoring = false; this.resetCapture(); try { State.autoProcessor?.disconnect(); State.autoSource?.disconnect(); State.autoZeroGain?.disconnect(); } catch {} State.autoProcessor = null; State.autoSource = null; State.autoZeroGain = null; },
+  prefetchFrame() { if (State.framePrefetched || !State.cameraEnabled) return; const image = Vision.captureCamera(); if (!image) return; WS.send({ type: 'frame', image }); State.framePrefetched = true; },
+  sendSpeechChunk(upTo) {
+    const all = concatFrames(State.utterFrames);
+    const chunk = all.subarray(State.sentSamples, upTo);
+    if (chunk.length < CONFIG.AUDIO.MIN_CHUNK_SAMPLES) return;
+    WS.send({ type: 'speech_chunk', seq: State.chunkSeq++, audio: float32ToWavBase64(resampleFloat32(chunk, State.autoSampleRate)) });
+    State.sentSamples = upTo;
   },
-  stopWatchdog() { if (State.autoMicWatchdogTimer) { clearInterval(State.autoMicWatchdogTimer); State.autoMicWatchdogTimer = null; } },
-  stopRawMonitor() { State.autoMonitoring = false; State.autoRecording = false; State.autoChunks = []; try { State.autoProcessor?.disconnect(); State.autoSource?.disconnect(); State.autoZeroGain?.disconnect(); } catch {} State.autoProcessor = null; State.autoSource = null; State.autoZeroGain = null; },
-  stopRawMonitorFull() { State.autoMicEnabled = false; this.stopRawMonitor(); STT.stop(); this.clearDraft(); State.autoSttSending = false; State.autoSttSendingAt = 0; this.updateUI(); if (State.appState === 'recording') UI.setState('listening'); },
+  startCapture() { State.autoRecording = true; State.autoStartedAt = Date.now(); State.autoLastVoiceAt = Date.now(); State.utterFrames = State.preRoll.slice(); State.sentSamples = 0; State.chunkSeq = 0; this.prefetchFrame(); UI.setState('recording'); },
+  triggerBargeIn() {
+    if (Date.now() - State.speakingStartedAt < CONFIG.TIMERS.BARGE_IN_GRACE_MS) return;
+    Interrupt.request(true); this.startCapture();
+  },
+  finishRecording() {
+    if (!State.autoRecording) return;
+    State.autoRecording = false; State.autoHotFrames = 0; State.framePrefetched = false;
+    const wasStreaming = State.sentSamples > 0;
+    const all = concatFrames(State.utterFrames);
+    State.utterFrames = [];
+    if (wasStreaming) {
+      const tail = all.subarray(State.sentSamples);
+      const tailWav = tail.length >= CONFIG.AUDIO.MIN_TAIL_SAMPLES ? float32ToWavBase64(resampleFloat32(tail, State.autoSampleRate)) : null;
+      SendPayload.execute({ audio: tailWav, chunked: true });
+    } else {
+      if (all.length < State.autoSampleRate * CONFIG.AUDIO.MIN_RAW_DURATION_S) { UI.setState('listening'); return; }
+      SendPayload.execute({ audio: float32ToWavBase64(resampleFloat32(all, State.autoSampleRate)) });
+    }
+    State.sentSamples = 0; State.chunkSeq = 0;
+    UI.setState('listening');
+  },
   async startRawMonitor() {
     if (State.autoMonitoring) return;
-    try { await Mic.ensureStream(); } catch (e) { console.warn('Auto Mic raw fallback unavailable:', e); if (Number(State.appSettings.browserStt ?? 1) === 1) { State.autoMonitoring = false; return; } State.autoMicEnabled = false; this.updateUI(); return; }
+    await Mic.ensureStream();
     AudioPlayback.ensureCtx();
     const tracks = State.micStream?.getAudioTracks() || [];
-    if (!tracks.length) { console.warn('Auto Mic: microphone unavailable'); if (Number(State.appSettings.browserStt ?? 1) === 1) { State.autoMonitoring = false; return; } State.autoMicEnabled = false; this.updateUI(); return; }
-    const vadStream = new MediaStream(tracks);
-    State.autoSource = State.audioCtx.createMediaStreamSource(vadStream);
+    if (!tracks.length) { State.autoMicEnabled = false; this.updateUI(); return; }
+    State.autoSource = State.audioCtx.createMediaStreamSource(new MediaStream(tracks));
     State.autoProcessor = State.audioCtx.createScriptProcessor(CONFIG.AUDIO.VAD_BUFFER_SIZE, 1, 1);
     State.autoZeroGain = State.audioCtx.createGain(); State.autoZeroGain.gain.value = 0;
-    State.autoSampleRate = State.audioCtx.sampleRate; State.autoNoiseFloor = CONFIG.AUDIO.NOISE_FLOOR_INITIAL; State.autoHotFrames = 0; State.autoPreRoll = [];
-    if (Number(State.appSettings.browserStt ?? 1)) STT.start();
+    State.autoSampleRate = State.audioCtx.sampleRate;
+    State.autoNoiseFloor = CONFIG.AUDIO.NOISE_FLOOR_INITIAL;
     State.autoProcessor.onaudioprocess = (e) => {
       if (!State.autoMicEnabled || State.recording) return;
-      if (State.autoSttDraft) return;
-      if (Date.now() < State.autoSuppressUntil) return;
       if (State.appState === 'processing') return;
-      if (AutoMic.shouldMuteStt()) return;
-      const input = new Float32Array(e.inputBuffer.getChannelData(0)); const rms = rmsOf(input); const now = Date.now();
-      const baseThreshold = Number(State.appSettings.voiceThreshold || 0.04);
-      const isSpeakingNow = State.appState === 'speaking';
-      const normalThreshold = Math.max(baseThreshold, State.autoNoiseFloor * CONFIG.AUDIO.NOISE_FLOOR_MULTIPLIER, CONFIG.AUDIO.MIN_NORMAL_THRESHOLD);
-      if (!State.autoRecording) {
-        State.autoPreRoll.push(input); if (State.autoPreRoll.length > CONFIG.AUDIO.PRE_ROLL_FRAMES) State.autoPreRoll.shift();
-        if (isSpeakingNow) { State.autoHotFrames = 0; return; }
-        State.autoNoiseFloor = State.autoNoiseFloor * CONFIG.AUDIO.NOISE_FLOOR_DECAY + Math.min(rms, baseThreshold) * CONFIG.AUDIO.NOISE_FLOOR_LEARN_RATE;
-        if (rms >= normalThreshold) State.autoHotFrames += 1; else State.autoHotFrames = Math.max(0, State.autoHotFrames - 1);
-        if (State.autoHotFrames >= CONFIG.AUDIO.HOT_FRAMES_TO_START) { State.autoRecording = true; State.autoStartedAt = now; State.autoLastVoiceAt = now; State.autoChunks = State.autoPreRoll.slice(); State.autoPreRoll = []; UI.setState('recording'); }
+      const input = new Float32Array(e.inputBuffer.getChannelData(0));
+      const rms = rmsOf(input); const now = Date.now();
+      const baseThreshold = Number(State.appSettings.voiceThreshold || 0.02);
+      if (State.appState === 'speaking') {
+        if (Number(State.appSettings.bargeIn)) {
+          State.bargeWindow.push(rms > baseThreshold * CONFIG.BARGE.MULT ? 1 : 0);
+          if (State.bargeWindow.length > CONFIG.BARGE.WINDOW) State.bargeWindow.shift();
+          if (State.bargeWindow.reduce((a, b) => a + b, 0) >= CONFIG.BARGE.HITS) { State.bargeWindow = []; this.triggerBargeIn(); }
+        }
         return;
       }
-      State.autoChunks.push(input);
+      State.bargeWindow = [];
+      if (this.shouldMute()) return;
+      if (!State.autoRecording) {
+        State.preRoll.push(input);
+        if (State.preRoll.length > CONFIG.AUDIO.PRE_ROLL_FRAMES) State.preRoll.shift();
+        State.autoNoiseFloor = State.autoNoiseFloor * CONFIG.AUDIO.NOISE_FLOOR_DECAY + Math.min(rms, baseThreshold) * CONFIG.AUDIO.NOISE_FLOOR_LEARN_RATE;
+        const normalThreshold = Math.max(baseThreshold, State.autoNoiseFloor * CONFIG.AUDIO.NOISE_FLOOR_MULTIPLIER, CONFIG.AUDIO.MIN_NORMAL_THRESHOLD);
+        if (rms >= normalThreshold) State.autoHotFrames += 1; else State.autoHotFrames = Math.max(0, State.autoHotFrames - 1);
+        if (State.autoHotFrames >= CONFIG.AUDIO.HOT_FRAMES_TO_START) this.startCapture();
+        return;
+      }
+      State.utterFrames.push(input);
       const dynThreshold = Math.max(baseThreshold, State.autoNoiseFloor * CONFIG.AUDIO.NOISE_FLOOR_MULTIPLIER, CONFIG.AUDIO.MIN_NORMAL_THRESHOLD);
       if (rms >= dynThreshold * 0.75) State.autoLastVoiceAt = now;
-      const minSpeechMs = Number(State.appSettings.minSpeechMs || 550);
-      if (now - State.autoLastVoiceAt > Number(State.appSettings.silenceStopMs || 950) && now - State.autoStartedAt >= minSpeechMs) this.finishRawRecording();
+      const total = totalSamples(State.utterFrames);
+      if (total - State.sentSamples >= CONFIG.AUDIO.CHUNK_SECONDS * State.autoSampleRate) this.sendSpeechChunk(total);
+      if (now - State.autoLastVoiceAt > Number(State.appSettings.silenceStopMs || 650) && now - State.autoStartedAt >= Number(State.appSettings.minSpeechMs || 400)) this.finishRecording();
     };
     State.autoSource.connect(State.autoProcessor); State.autoProcessor.connect(State.autoZeroGain); State.autoZeroGain.connect(State.audioCtx.destination);
     State.autoMonitoring = true;
   },
-  finishRawRecording() {
-    if (!State.autoRecording) return;
-    State.autoRecording = false; State.autoHotFrames = 0;
-    const len = State.autoChunks.reduce((a, c) => a + c.length, 0);
-    const minLen = State.autoSampleRate * (Number(State.appSettings.minSpeechMs || 550) / 1000);
-    if (len < minLen) { State.autoChunks = []; STT.stop(); UI.setState('listening'); return; }
-    const merged = new Float32Array(len); let off = 0; for (const c of State.autoChunks) { merged.set(c, off); off += c.length; }
-    State.autoChunks = [];
-    const wav = float32ToWavBase64(resampleFloat32(merged, State.autoSampleRate, CONFIG.AUDIO.TARGET_WAV_RATE));
-    let transcript = STT.stop(); if (EchoCancel.isLikelyEcho(transcript)) transcript = '';
-    SendPayload.execute({ audio: wav, transcript });
-    if (State.autoMicEnabled) setTimeout(() => { if (State.autoMicEnabled && !State.recording && !State.autoRecording) STT.restartSoon(CONFIG.TIMERS.AUTO_MIC_RESTART_AFTER_FINISH_MS); }, CONFIG.TIMERS.AUTO_MIC_RESTART_AFTER_FINISH_MS);
-  },
 };
-
+/* ══ 11. MIC (push-to-talk) ══ */
 const Mic = {
   async ensureStream() {
-    const alive = State.micStream && State.micStream.getAudioTracks().some(t => t.readyState === 'live'); if (alive) return State.micStream;
-    try { State.micStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); return State.micStream; }
-    catch (e) { console.warn('microphone failed', e); UI.setStatus('error', 'Mic blocked/unavailable'); throw e; }
+    const alive = State.micStream && State.micStream.getAudioTracks().some(t => t.readyState === 'live');
+    if (alive) return State.micStream;
+    State.micStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+    return State.micStream;
   },
   async startRecording() {
     if (State.recording || State.micHoldActive || State.micFinalizing) return;
-    State.micHoldActive = true; State.micStartedAt = Date.now(); State.recording = true; State.recRawActive = false;
+    State.micHoldActive = true; State.recording = true; State.recChunks = [];
     const btn = $('micBtn'); btn?.classList.add('recording'); if (btn) btn.textContent = '🔴';
-    UI.setState('recording'); UI.setStatus('connected', 'Push mic: starting');
-    Interrupt.request(true); AutoMic.clearDraft(); State.recChunks = []; State.speechTranscript = ''; State.autoSttDraft = '';
-    if (Number(State.appSettings.browserStt ?? 1) === 1 && STT.supported()) { try { if (State.speechRec) State.speechRec.abort(); } catch {} State.speechRec = null; State.speechRunning = false; State.speechStarting = false; STT.start(); }
+    UI.setState('recording'); UI.setStatus('connected', 'Push mic: recording...');
+    Interrupt.request(true);
     try {
       await this.ensureStream(); if (!State.micHoldActive || !State.recording) return;
       AudioPlayback.ensureCtx();
       const tracks = State.micStream?.getAudioTracks() || []; if (!tracks.length) throw new Error('no audio tracks');
       State.recSampleRate = State.audioCtx.sampleRate;
-      const holdStream = new MediaStream(tracks);
-      State.recSource = State.audioCtx.createMediaStreamSource(holdStream);
+      State.recSource = State.audioCtx.createMediaStreamSource(new MediaStream(tracks));
       State.recProcessor = State.audioCtx.createScriptProcessor(CONFIG.AUDIO.SCRIPT_PROCESSOR_BUFFER, 1, 1);
       State.recZeroGain = State.audioCtx.createGain(); State.recZeroGain.gain.value = 0;
-      State.recProcessor.onaudioprocess = (e) => { if (State.recording) State.recChunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); };
+      State.recProcessor.onaudioprocess = (e) => { if (State.recording && !AutoMic.shouldMute()) State.recChunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); };
       State.recSource.connect(State.recProcessor); State.recProcessor.connect(State.recZeroGain); State.recZeroGain.connect(State.audioCtx.destination);
-      State.recRawActive = true;
-      UI.setStatus('connected', Number(State.appSettings.browserStt ?? 1) === 1 ? 'Push mic: STT + raw' : 'Push mic: raw recording');
-    } catch (e) {
-      console.warn('Push mic raw fallback unavailable:', e); State.recRawActive = false;
-      if (!STT.supported() || Number(State.appSettings.browserStt ?? 1) !== 1) UI.setStatus('error', 'Mic unavailable'); else UI.setStatus('connected', 'Push mic: STT only');
-    }
+    } catch (e) { console.warn('Push mic failed:', e); State.recording = false; State.micHoldActive = false; UI.setStatus('error', 'Mic unavailable'); }
   },
   stopRecording() {
     if (State.micFinalizing) return; if (!State.micHoldActive && !State.recording) return;
     State.micHoldActive = false; State.micFinalizing = true;
     const btn = $('micBtn'); btn?.classList.remove('recording'); if (btn) btn.textContent = '⏳';
-    UI.setStatus('connected', 'Push mic: finishing...');
     if (State.micFinalizeTimer) clearTimeout(State.micFinalizeTimer);
     State.micFinalizeTimer = setTimeout(() => this.finalizeRecording(), CONFIG.TIMERS.MIC_FINALIZE_DELAY_MS);
   },
-  async finalizeRecording() {
+  finalizeRecording() {
     if (!State.micFinalizing && !State.recording) return;
-    State.micFinalizing = false; if (State.micFinalizeTimer) { clearTimeout(State.micFinalizeTimer); State.micFinalizeTimer = null; }
-    State.recording = false;
-    const transcriptBeforeStop = (State.speechTranscript || State.autoSttDraft || '').trim();
-    let transcript = await STT.stopFinal(CONFIG.TIMERS.STT_FINAL_WAIT_MS);
-    transcript = chooseBetterTranscript(transcriptBeforeStop, transcript).trim();
-    if (EchoCancel.isLikelyEcho(transcript)) transcript = '';
+    State.micFinalizing = false; State.recording = false;
     const btn = $('micBtn'); if (btn) btn.textContent = '🎙';
     try { State.recProcessor?.disconnect(); State.recSource?.disconnect(); State.recZeroGain?.disconnect(); } catch {}
     State.recProcessor = null; State.recSource = null; State.recZeroGain = null;
     const len = State.recChunks.reduce((a, c) => a + c.length, 0);
-    const hasEnoughRaw = State.recRawActive && len >= State.recSampleRate * CONFIG.AUDIO.MIN_RAW_DURATION_S;
-    const micModeRaw = State.appSettings.audioInputMode || (Number(State.appSettings.sendRawAudio || 0) ? 'native' : 'stt');
-    const micMode = ['stt', 'native', 'hybrid'].includes(micModeRaw) ? micModeRaw : 'stt';
-    const wantsRaw = micMode === 'native' || micMode === 'hybrid';
-    if (transcript && !(wantsRaw && hasEnoughRaw)) {
-      State.recChunks = []; State.recRawActive = false; AutoMic.clearDraft(); SendPayload.execute({ text: transcript });
-      if (State.autoMicEnabled) setTimeout(() => { if (State.autoMicEnabled && !State.recording && !State.micHoldActive && !State.micFinalizing) STT.restartSoon(CONFIG.TIMERS.AUTO_MIC_RESTART_AFTER_SEND_MS); }, CONFIG.TIMERS.AUTO_MIC_RESTART_AFTER_SEND_MS);
-      return;
-    }
-    if (hasEnoughRaw) {
-      const merged = new Float32Array(len); let off = 0; for (const c of State.recChunks) { merged.set(c, off); off += c.length; }
-      State.recChunks = []; State.recRawActive = false; AutoMic.clearDraft();
-      const wav = float32ToWavBase64(resampleFloat32(merged, State.recSampleRate, CONFIG.AUDIO.TARGET_WAV_RATE));
-      UI.setStatus('processing', wantsRaw ? (micMode === 'native' ? 'Sending native audio' : 'Sending hybrid voice') : 'Sending voice audio');
-      SendPayload.execute({ audio: wav, transcript });
-      if (State.autoMicEnabled) setTimeout(() => { if (State.autoMicEnabled && !State.recording && !State.autoRecording) STT.restartSoon(CONFIG.TIMERS.STT_RESTART_AFTER_SEND_MS); }, CONFIG.TIMERS.AUTO_MIC_RESTART_AFTER_RAW_MS);
-      return;
-    }
-    State.recChunks = []; State.recRawActive = false; AutoMic.clearDraft();
-    UI.setState('listening'); UI.setStatus('connected', 'No speech recognized');
-    if (State.autoMicEnabled) STT.restartSoon(CONFIG.TIMERS.AUTO_MIC_RESTART_AFTER_NO_SPEECH_MS);
+    if (len < State.recSampleRate * CONFIG.AUDIO.MIN_RAW_DURATION_S) { State.recChunks = []; UI.setState('listening'); UI.setStatus('connected', 'Too short'); return; }
+    const wav = float32ToWavBase64(resampleFloat32(concatFrames(State.recChunks), State.recSampleRate));
+    State.recChunks = [];
+    SendPayload.execute({ audio: wav });
   },
 };
-
+/* ══ 12. VISION ══ */
 const Vision = {
   async startMedia() {
     if (State.mediaStream && State.mediaStream.getTracks().length) return;
-    const tracks = []; let gotVideo = false, gotAudio = false;
-    try { const a = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); a.getAudioTracks().forEach(t => tracks.push(t)); gotAudio = true; } catch (e) { console.warn('audio failed', e?.message || e); }
+    const tracks = []; let gotVideo = false;
+    try { const a = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); a.getAudioTracks().forEach(t => tracks.push(t)); } catch (e) { console.warn('audio failed', e?.message || e); }
     try { const v = await navigator.mediaDevices.getUserMedia({ video: { width: CONFIG.VISION.CAMERA_WIDTH, height: CONFIG.VISION.CAMERA_HEIGHT, facingMode: 'user' } }); v.getVideoTracks().forEach(t => tracks.push(t)); gotVideo = true; } catch (e) { console.warn('video failed', e?.message || e); }
-    State.mediaStream = new MediaStream(tracks);
+    State.mediaStream = new MediaStream(tracks); State.micStream = State.mediaStream;
     if (gotVideo) { $('cameraVideo').srcObject = State.mediaStream; State.cameraEnabled = true; $('cameraToggle').textContent = 'Camera On'; $('cameraToggle').classList.add('active'); }
     else { State.cameraEnabled = false; $('cameraToggle').textContent = 'No Camera'; $('cameraToggle').classList.remove('active'); }
-    if (!gotAudio) console.warn('Microphone is unavailable or permission was denied');
   },
   async startMediaIfNeeded() { if (!State.mediaStream) await this.startMedia(); },
-  captureFrame(video, maxW = 640, quality = 0.75) { if (!video || !video.videoWidth) return null; const c = document.createElement('canvas'); const scale = Math.min(1, maxW / video.videoWidth); c.width = Math.max(1, Math.round(video.videoWidth * scale)); c.height = Math.max(1, Math.round(video.videoHeight * scale)); c.getContext('2d').drawImage(video, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', quality).split(',')[1]; },
-  captureCamera() { return State.cameraEnabled ? this.captureFrame($('cameraVideo'), Number(State.appSettings?.cameraMax || 448), CONFIG.VISION.JPEG_QUALITY_LIVE) : null; },
-  captureScreen() { return State.screenStream && State.screenSending ? this.captureFrame($('screenVideo'), Number(State.appSettings?.screenMax || 512), CONFIG.VISION.JPEG_QUALITY_LIVE) : null; },
-  capturePdf() { const c = $('pdfCanvas'); if (!State.pdfDoc || !State.pdfSending || !c.width) return null; const out = document.createElement('canvas'); const scale = Math.min(1, Number(State.appSettings?.pdfMax || 512) / c.width); out.width = Math.max(1, Math.round(c.width * scale)); out.height = Math.max(1, Math.round(c.height * scale)); out.getContext('2d').drawImage(c, 0, 0, out.width, out.height); return out.toDataURL('image/jpeg', CONFIG.VISION.JPEG_QUALITY_PDF).split(',')[1]; },
-  captureVideo() { const v = $('fileVideo'); return v && v.src && State.videoSending && !v.paused && !v.ended ? this.captureFrame(v, Number(State.appSettings?.videoMax || 512), CONFIG.VISION.JPEG_QUALITY_LIVE) : null; },
-  resizeImageBlobFromUrl(url, maxW = 640, quality = CONFIG.VISION.JPEG_QUALITY_IMAGE) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => { const c = document.createElement('canvas'); const scale = Math.min(1, maxW / img.naturalWidth); c.width = Math.max(1, Math.round(img.naturalWidth * scale)); c.height = Math.max(1, Math.round(img.naturalHeight * scale)); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); resolve(c.toDataURL('image/jpeg', quality).split(',')[1]); };
-      img.onerror = () => resolve(null); img.src = url;
-    });
+  captureFrame(video, maxW = 640, quality = 0.75) {
+    if (!video || !video.videoWidth) return null;
+    if (!sharedCanvas) { sharedCanvas = document.createElement('canvas'); sharedCtx = sharedCanvas.getContext('2d', { willReadFrequently: true }); }
+    const scale = Math.min(1, maxW / video.videoWidth);
+    const width = Math.max(1, Math.round(video.videoWidth * scale));
+    const height = Math.max(1, Math.round(video.videoHeight * scale));
+    if (sharedCanvas.width !== width || sharedCanvas.height !== height) { sharedCanvas.width = width; sharedCanvas.height = height; }
+    sharedCtx.drawImage(video, 0, 0, width, height);
+    return sharedCanvas.toDataURL('image/jpeg', quality).split(',')[1];
   },
-  pushLiveFrame(source, blob, kind = 'live') { if (!blob) return; const buf = State.liveFrameBuffers[source] || (State.liveFrameBuffers[source] = []); const h = frameHash(blob); if (buf.length && buf[buf.length - 1].hash === h) return; buf.push({ source, blob, kind, t: Date.now(), index: ++State.liveFrameSeq, hash: h }); const keep = Math.max(CONFIG.VISION.FRAME_BUFFER_MIN, Math.min(CONFIG.VISION.FRAME_BUFFER_MAX, Math.ceil(Number(State.appSettings.liveFrames || 8) * CONFIG.VISION.FRAME_BUFFER_MULTIPLIER))); while (buf.length > keep) buf.shift(); },
-  captureLiveTick() { const cam = this.captureCamera(); if (cam) this.pushLiveFrame('camera', cam, 'live-camera'); const scr = this.captureScreen(); if (scr) this.pushLiveFrame('screen', scr, 'live-screen'); const vid = this.captureVideo(); if (vid) this.pushLiveFrame('video', vid, 'live-video'); this.updateLiveLabels(); },
-  restartLiveFrameRecorder() { if (State.liveFrameTimer) clearInterval(State.liveFrameTimer); const fps = Math.max(0.2, Math.min(8, Number(State.appSettings.liveFps || 2))); State.liveFrameTimer = setInterval(() => this.captureLiveTick(), Math.round(1000 / fps)); setTimeout(() => this.captureLiveTick(), CONFIG.TIMERS.LIVE_FRAME_INITIAL_DELAY_MS); },
+  captureCamera() { return State.cameraEnabled ? this.captureFrame($('cameraVideo'), Number(State.appSettings?.cameraMax || 384), CONFIG.VISION.JPEG_QUALITY_LIVE) : null; },
+  captureScreen() { return State.screenStream && State.screenSending ? this.captureFrame($('screenVideo'), Number(State.appSettings?.screenMax || 384), CONFIG.VISION.JPEG_QUALITY_LIVE) : null; },
+  capturePdf() { const c = $('pdfCanvas'); if (!State.pdfDoc || !State.pdfSending || !c.width) return null; const out = document.createElement('canvas'); const scale = Math.min(1, Number(State.appSettings?.pdfMax || 448) / c.width); out.width = Math.max(1, Math.round(c.width * scale)); out.height = Math.max(1, Math.round(c.height * scale)); out.getContext('2d').drawImage(c, 0, 0, out.width, out.height); return out.toDataURL('image/jpeg', CONFIG.VISION.JPEG_QUALITY_PDF).split(',')[1]; },
+  captureVideo() { const v = $('fileVideo'); return v && v.src && State.videoSending && !v.paused && !v.ended ? this.captureFrame(v, Number(State.appSettings?.videoMax || 384), CONFIG.VISION.JPEG_QUALITY_LIVE) : null; },
+  resizeImageBlobFromUrl(url, maxW = 640, quality = CONFIG.VISION.JPEG_QUALITY_IMAGE) {
+    return new Promise((resolve) => { const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); const scale = Math.min(1, maxW / img.naturalWidth); c.width = Math.max(1, Math.round(img.naturalWidth * scale)); c.height = Math.max(1, Math.round(img.naturalHeight * scale)); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); resolve(c.toDataURL('image/jpeg', quality).split(',')[1]); }; img.onerror = () => resolve(null); img.src = url; });
+  },
+  pushLiveFrame(source, blob, kind = 'live') { if (!blob) return; const buf = State.liveFrameBuffers[source] || (State.liveFrameBuffers[source] = []); const h = frameHash(blob); if (buf.length && buf[buf.length - 1].hash === h) return; buf.push({ source, blob, kind, t: Date.now(), index: ++State.liveFrameSeq, hash: h }); const keep = Math.max(CONFIG.VISION.FRAME_BUFFER_MIN, Math.min(CONFIG.VISION.FRAME_BUFFER_MAX, Math.ceil(Number(State.appSettings.liveFrames || 2) * CONFIG.VISION.FRAME_BUFFER_MULTIPLIER))); while (buf.length > keep) buf.shift(); },
+  captureLiveTick() { const cam = this.captureCamera(); if (cam) this.pushLiveFrame('camera', cam); const scr = this.captureScreen(); if (scr) this.pushLiveFrame('screen', scr); const vid = this.captureVideo(); if (vid) this.pushLiveFrame('video', vid); this.updateLiveLabels(); },
+  restartLiveFrameRecorder() { if (State.liveFrameTimer) clearInterval(State.liveFrameTimer); const fps = Math.max(0.2, Math.min(8, Number(State.appSettings.liveFps || 1))); const tick = () => { if (!document.hidden) this.captureLiveTick(); }; State.liveFrameTimer = setInterval(tick, Math.round(1000 / fps)); setTimeout(tick, CONFIG.TIMERS.LIVE_FRAME_INITIAL_DELAY_MS); },
   takeRecent(source, count) { const buf = State.liveFrameBuffers[source] || []; return buf.slice(-Math.max(0, count)).map(({ hash, ...x }) => x); },
   visualIntent(text = '') { return CONFIG.PATTERNS.VISUAL_INTENT.test(text || ''); },
   collectFrameSequence(opts = {}) {
@@ -1148,19 +862,13 @@ const Vision = {
     if (remaining && includeVideo) frames.push(...this.takeRecent('video', Math.min(remaining, Math.ceil(maxTotal / 2))));
     remaining = Math.max(0, maxTotal - frames.length);
     if (remaining && includeCamera) frames.push(...this.takeRecent('camera', Math.min(remaining, 1)));
-    if (includeScreen && !frames.some(f => f.source === 'screen')) { const scr = this.captureScreen(); if (scr && frames.length < maxTotal) frames.push({ source: 'screen', blob: scr, kind: 'instant-screen', t: Date.now(), index: ++State.liveFrameSeq }); }
-    if (includeVideo && !frames.some(f => f.source === 'video')) { const vid = this.captureVideo(); if (vid && frames.length < maxTotal) frames.push({ source: 'video', blob: vid, kind: 'instant-video', t: Date.now(), index: ++State.liveFrameSeq }); }
-    if (includeCamera && !frames.some(f => f.source === 'camera')) { const cam = this.captureCamera(); if (cam && frames.length < maxTotal) frames.push({ source: 'camera', blob: cam, kind: 'instant-camera', t: Date.now(), index: ++State.liveFrameSeq }); }
     const pdf = includePdf ? this.capturePdf() : null;
     if (pdf && frames.length < Math.min(CONFIG.VISION.MAX_LIVE_FRAMES, maxTotal + 1)) frames.push({ source: 'pdf', blob: pdf, kind: 'current-pdf-page', t: Date.now(), index: ++State.liveFrameSeq });
     frames.sort((a, b) => (a.t || 0) - (b.t || 0));
     return frames.slice(-Math.min(CONFIG.VISION.MAX_LIVE_FRAMES, maxTotal + (includePdf ? 1 : 0)));
   },
-  collectUploadedImages() { if (!State.imageSending || !State.uploadedImages.length) return []; const max = Math.min(CONFIG.VISION.MAX_UPLOADED_IMAGES, State.uploadedImages.length); return State.uploadedImages.slice(0, max).map((blob, i) => ({ source: 'image', blob, kind: 'uploaded-image', index: i + 1, t: Date.now() })); },
-  updateLiveLabels() {
-    const pairs = [['cameraLiveLabel', State.cameraEnabled && (State.liveFrameBuffers.camera || []).length], ['screenLiveLabel', State.screenStream && State.screenSending && (State.liveFrameBuffers.screen || []).length], ['videoLiveLabel', $('fileVideo')?.src && State.videoSending && (State.liveFrameBuffers.video || []).length], ['imageLiveLabel', State.uploadedImages.length && State.imageSending], ['pdfLiveLabel', State.pdfDoc && State.pdfSending]];
-    for (const [id, on] of pairs) { const el = $(id); if (el) el.classList.toggle('on', !!on); }
-  },
+  collectUploadedImages() { if (!State.imageSending || !State.uploadedImages.length) return []; return State.uploadedImages.slice(0, Math.min(CONFIG.VISION.MAX_UPLOADED_IMAGES, State.uploadedImages.length)).map((blob, i) => ({ source: 'image', blob, kind: 'uploaded-image', index: i + 1, t: Date.now() })); },
+  updateLiveLabels() { const pairs = [['cameraLiveLabel', State.cameraEnabled && (State.liveFrameBuffers.camera || []).length], ['screenLiveLabel', State.screenStream && State.screenSending && (State.liveFrameBuffers.screen || []).length], ['videoLiveLabel', $('fileVideo')?.src && State.videoSending && (State.liveFrameBuffers.video || []).length], ['imageLiveLabel', State.uploadedImages.length && State.imageSending], ['pdfLiveLabel', State.pdfDoc && State.pdfSending]]; for (const [id, on] of pairs) { const el = $(id); if (el) el.classList.toggle('on', !!on); } },
   async startScreenShare() {
     try {
       State.screenStream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 30, max: 60 } }, audio: false });
@@ -1173,116 +881,107 @@ const Vision = {
   stopScreenShare() { State.screenStream?.getTracks().forEach(t => t.stop()); State.screenStream = null; State.liveFrameBuffers.screen = []; $('screenVideo').srcObject = null; $('screenVideo').style.display = 'none'; $('screenEmpty').style.display = 'flex'; $('screenActions').style.display = 'none'; $('screenBottom').style.display = 'none'; this.updateLiveLabels(); },
   async loadPdf(file) {
     try {
-      const pdfjs = await import(CONFIG.CDN.PDF_JS); pdfjs.GlobalWorkerOptions.workerSrc = CONFIG.CDN.PDF_WORKER;
-      const bytes = await file.arrayBuffer(); State.pdfDoc = await pdfjs.getDocument({ data: bytes }).promise; State.pdfPageCount = State.pdfDoc.numPages; State.pdfPage = 1; await this.renderPdfPage();
+      if (!pdfjsPromise) pdfjsPromise = import(CONFIG.CDN.PDF_JS).then(pdfjs => { pdfjs.GlobalWorkerOptions.workerSrc = CONFIG.CDN.PDF_WORKER; return pdfjs; });
+      const pdfjs = await pdfjsPromise;
+      const bytes = await file.arrayBuffer(); State.pdfDoc = await pdfjs.getDocument({ data: bytes }).promise; State.pdfPageCount = State.pdfDoc.numPages; State.pdfPage = 1;
+      await this.renderPdfPage();
       $('pdfCanvas').style.display = 'block'; $('pdfEmpty').style.display = 'none'; $('pdfActions').style.display = 'flex'; $('pdfBottom').style.display = 'flex';
       State.pdfSending = true; $('pdfSendToggle').classList.add('active'); $('pdfSendToggle').textContent = 'PDF On';
     } catch (e) { alert('PDF failed to load: ' + e.message); }
   },
-  async renderPdfPage() { if (!State.pdfDoc) return; try { State.pdfRenderTask?.cancel?.(); } catch {} const page = await State.pdfDoc.getPage(State.pdfPage); const viewport = page.getViewport({ scale: CONFIG.VISION.PDF_RENDER_SCALE }); const c = $('pdfCanvas'); c.width = viewport.width; c.height = viewport.height; const ctx = c.getContext('2d'); State.pdfRenderTask = page.render({ canvasContext: ctx, viewport }); await State.pdfRenderTask.promise.catch(() => {}); $('pdfPageLabel').textContent = `${State.pdfPage}/${State.pdfPageCount}`; },
+  async renderPdfPage() { if (!State.pdfDoc) return; try { State.pdfRenderTask?.cancel?.(); } catch {} const page = await State.pdfDoc.getPage(State.pdfPage); const viewport = page.getViewport({ scale: CONFIG.VISION.PDF_RENDER_SCALE }); const c = $('pdfCanvas'); c.width = viewport.width; c.height = viewport.height; State.pdfRenderTask = page.render({ canvasContext: c.getContext('2d'), viewport }); await State.pdfRenderTask.promise.catch(() => {}); $('pdfPageLabel').textContent = `${State.pdfPage}/${State.pdfPageCount}`; },
   changePdfPage(d) { if (!State.pdfDoc) return; State.pdfPage = Math.max(1, Math.min(State.pdfPageCount, State.pdfPage + d)); this.renderPdfPage(); },
   removePdf() { try { State.pdfDoc?.destroy?.(); } catch {} State.pdfDoc = null; State.pdfPage = 1; State.pdfPageCount = 0; $('pdfCanvas').style.display = 'none'; $('pdfEmpty').style.display = 'flex'; $('pdfActions').style.display = 'none'; $('pdfBottom').style.display = 'none'; },
   loadVideo(file) { if (State.videoObjectUrl) URL.revokeObjectURL(State.videoObjectUrl); State.videoObjectUrl = URL.createObjectURL(file); $('fileVideo').src = State.videoObjectUrl; $('fileVideo').style.display = 'block'; $('videoFileName').textContent = file.name; $('videoEmpty').style.display = 'none'; $('videoActions').style.display = 'flex'; $('videoBottom').style.display = 'flex'; State.videoSending = true; $('videoSendToggle').classList.add('active'); $('videoSendToggle').textContent = 'Video On'; State.liveFrameBuffers.video = []; this.restartLiveFrameRecorder(); },
   removeVideo() { if (State.videoObjectUrl) URL.revokeObjectURL(State.videoObjectUrl); State.videoObjectUrl = null; State.liveFrameBuffers.video = []; $('fileVideo').removeAttribute('src'); $('fileVideo').load(); $('fileVideo').style.display = 'none'; $('videoEmpty').style.display = 'flex'; $('videoActions').style.display = 'none'; $('videoBottom').style.display = 'none'; this.updateLiveLabels(); },
   async loadImages(fileList) {
     const files = Array.from(fileList instanceof FileList ? fileList : [fileList]).filter(f => f && f.type && f.type.startsWith('image/')); if (!files.length) return;
-    for (const u of State.imageObjectUrls) URL.revokeObjectURL(u); State.imageObjectUrls = []; State.uploadedImages = []; State.currentImageIndex = 0;
-    for (const f of files.slice(0, CONFIG.VISION.MAX_UPLOADED_IMAGES)) { const url = URL.createObjectURL(f); State.imageObjectUrls.push(url); const blob = await this.resizeImageBlobFromUrl(url, Number(State.appSettings?.imageMax || 640), CONFIG.VISION.JPEG_QUALITY_IMAGE); if (blob) State.uploadedImages.push(blob); }
+    for (const u of State.imageObjectUrls) URL.revokeObjectURL(u); State.imageObjectUrls = []; State.uploadedImages = [];
+    for (const f of files.slice(0, CONFIG.VISION.MAX_UPLOADED_IMAGES)) { const url = URL.createObjectURL(f); State.imageObjectUrls.push(url); const blob = await this.resizeImageBlobFromUrl(url, Number(State.appSettings?.imageMax || 512), CONFIG.VISION.JPEG_QUALITY_IMAGE); if (blob) State.uploadedImages.push(blob); }
     if (State.imageObjectUrls[0]) { $('imagePreview').src = State.imageObjectUrls[0]; $('imagePreview').style.display = 'block'; }
     $('imageFileName').textContent = files.length === 1 ? files[0].name : `${files.length} images`;
     $('imageEmpty').style.display = 'none'; $('imageActions').style.display = 'flex'; $('imageBottom').style.display = 'flex';
     State.imageSending = true; $('imageSendToggle').classList.add('active'); $('imageSendToggle').textContent = 'Images On'; this.updateLiveLabels();
   },
-  removeImages() { for (const u of State.imageObjectUrls) URL.revokeObjectURL(u); State.imageObjectUrls = []; State.uploadedImages = []; State.currentImageIndex = 0; $('imagePreview').removeAttribute('src'); $('imagePreview').style.display = 'none'; $('imageEmpty').style.display = 'flex'; $('imageActions').style.display = 'none'; $('imageBottom').style.display = 'none'; this.updateLiveLabels(); },
+  removeImages() { for (const u of State.imageObjectUrls) URL.revokeObjectURL(u); State.imageObjectUrls = []; State.uploadedImages = []; $('imagePreview').removeAttribute('src'); $('imagePreview').style.display = 'none'; $('imageEmpty').style.display = 'flex'; $('imageActions').style.display = 'none'; $('imageBottom').style.display = 'none'; this.updateLiveLabels(); },
   pickFile(accept, cb, multiple = false) { const input = document.createElement('input'); input.type = 'file'; input.accept = accept; input.multiple = !!multiple; input.onchange = () => { if (input.files?.length) cb(multiple ? input.files : input.files[0]); }; input.click(); },
 };
-
+/* ══ 13. INTERRUPT ══ */
 const Interrupt = {
   request(fromVoice = false) {
     const rid = State.activeRequestId || State.currentAudioRequestId || null;
     if (State.activeRequestId) { State.ignoredTextRequests.add(State.activeRequestId); State.ignoredAudioRequests.add(State.activeRequestId); }
     if (State.currentAudioRequestId) { State.ignoredTextRequests.add(State.currentAudioRequestId); State.ignoredAudioRequests.add(State.currentAudioRequestId); }
     if (rid) { State.ignoredTextRequests.add(rid); State.ignoredAudioRequests.add(rid); }
-    try { if (State.ws && State.ws.readyState === 1) State.ws.send(JSON.stringify({ type: 'interrupt', chat_id: State.activeChatId, request_id: rid, reason: fromVoice ? 'barge_in' : 'manual' })); } catch {}
+    WS.send({ type: 'interrupt', chat_id: State.activeChatId, request_id: rid, reason: fromVoice ? 'barge_in' : 'manual' });
     AudioPlayback.stop({ clearRequest: true });
     State.activeRequestId = null; State.currentAudioRequestId = null; State.currentAudioMessageId = null; State.activeAssistantId = null;
-    State.ttsEchoActive = false; State.speechTranscript = ''; AutoMic.clearDraft();
-    if (fromVoice) { UI.setState('listening'); UI.setStatus('connected', 'Interrupted · listening'); if (State.autoMicEnabled) { State.autoSttSending = false; State.autoSttSendingAt = 0; STT.restartSoon(CONFIG.TIMERS.TEXT_FINAL_STATE_CHECK_MS); } }
-    else { UI.setState('listening'); UI.setStatus('connected', 'Interrupted'); }
+    UI.setState('listening'); UI.setStatus('connected', fromVoice ? 'Interrupted · listening' : 'Interrupted');
   },
 };
-
+/* ══ 14. SEND PAYLOAD ══ */
 const SendPayload = {
-  historyForServer() { const n = Math.max(2, Math.min(200, Number(State.appSettings.historyMessages || 64))); return State.messages.filter(m => !m.pending && (m.role === 'user' || m.role === 'assistant') && textOfMessage(m)).slice(-n).map(m => ({ role: m.role, text: textOfMessage(m) })); },
+  historyForServer() { const n = Math.max(2, Math.min(200, Number(State.appSettings.historyMessages || 20))); return State.messages.filter(m => !m.pending && (m.role === 'user' || m.role === 'assistant') && textOfMessage(m)).slice(-n).map(m => ({ role: m.role, text: textOfMessage(m) })); },
   historyFromList(list) { return list.filter(m => !m.pending && (m.role === 'user' || m.role === 'assistant') && textOfMessage(m)).map(m => ({ role: m.role, text: textOfMessage(m) })); },
   buildHistoryUntilIndex(endExclusive) { return this.historyFromList(State.messages.slice(0, Math.max(0, endExclusive))); },
   previousUserMessageIndex(idx) { for (let i = idx - 1; i >= 0; i--) if (State.messages[i].role === 'user' && textOfMessage(State.messages[i])) return i; return -1; },
-  execute({ text = '', audio = null, transcript = '', historyOverride = null, suppressUserEcho = false, replaceAssistantId = null } = {}) {
-    if (!State.ws || State.ws.readyState !== WebSocket.OPEN) { console.warn('WS not open; dropped request'); UI.setStatus('disconnected', 'Disconnected'); return; }
+  execute({ text = '', audio = null, chunked = false, historyOverride = null, suppressUserEcho = false, replaceAssistantId = null } = {}) {
+    if (!State.ws || State.ws.readyState !== WebSocket.OPEN) { UI.setStatus('disconnected', 'Disconnected'); return; }
     const hist = Array.isArray(historyOverride) ? historyOverride : this.historyForServer();
-    const spokenText = (transcript || '').trim();
-    const micModeRaw = State.appSettings.audioInputMode || (Number(State.appSettings.sendRawAudio || 0) ? 'native' : 'stt');
-    const micMode = ['stt', 'native', 'hybrid'].includes(micModeRaw) ? micModeRaw : 'stt';
+    const outgoingText = String(text || '').trim();
     const hasAudio = !!audio;
-    let outgoingText = '';
-    if (text) outgoingText = String(text).trim();
-    else if (hasAudio && micMode === 'native') outgoingText = '';
-    else outgoingText = spokenText;
-    const attachRawAudio = hasAudio && (micMode === 'native' || micMode === 'hybrid' || (!outgoingText && !spokenText));
-    if (!outgoingText && !attachRawAudio) { console.warn('Dropped voice event: no STT text and raw audio is disabled', { micMode, hasAudio }); UI.setState('listening'); UI.setStatus('connected', 'Connected'); return; }
+    if (!outgoingText && !hasAudio && !chunked) { UI.setState('listening'); return; }
     if ((State.activeRequestId || State.currentAudioRequestId || State.streamSources.length || State.ttsPendingAudioChunks.length || State.ttsPlaybackStarted || State.appState === 'speaking') && !replaceAssistantId) Interrupt.request(false);
     const wantsVision = Vision.visualIntent(outgoingText);
     const visionMode = State.appSettings.visionMode || 'auto';
     const useVision = visionMode === 'always' || (visionMode === 'auto' && wantsVision);
-    const includeCamera = useVision && (Number(State.appSettings.attachCameraAlways || 0) === 1 || wantsVision);
-    const frames = useVision ? Vision.collectFrameSequence({ includeScreen: true, includeVideo: wantsVision, includePdf: wantsVision, includeCamera }) : [];
-    const images = useVision ? Vision.collectUploadedImages() : [];
+    const frames = useVision ? Vision.collectFrameSequence({ includeScreen: true, includeVideo: wantsVision, includePdf: wantsVision, includeCamera: useVision }) : [];
+    const images = (visionMode !== 'off') ? Vision.collectUploadedImages() : [];
     const used = [...new Set([...frames.map(x => x.source), ...images.map(x => x.source)])].join(' · ');
     State.activeRequestId = `r-${Date.now()}`;
     if (!suppressUserEcho) {
-      if (outgoingText) { const meta = text ? (used ? `with ${used}` : '') : (attachRawAudio ? `voice/${micMode}${used ? ' · ' + used : ''}` : (used ? `voice/STT · ${used}` : 'voice/STT')); UI.addMessage('user', outgoingText, meta); Chats.maybeTitle(outgoingText); }
-      else if (attachRawAudio) { const uid = UI.addMessage('user', '', used ? `voice/${micMode} · ${used}` : `voice/${micMode}`, true); const um = State.messages.find(x => x.id === uid); if (um) um.requestId = State.activeRequestId; }
-      else if (frames.length || images.length) UI.addMessage('user', 'look at the attachments', used ? `with ${used}` : 'with image');
+      if (outgoingText) { UI.addMessage('user', outgoingText, used ? `with ${used}` : ''); Chats.maybeTitle(outgoingText); }
+      else if (hasAudio || chunked) { const uid = UI.addMessage('user', '🎙 ...', used ? `voice · ${used}` : 'voice', true); const um = State.messages.find(x => x.id === uid); if (um) um.requestId = State.activeRequestId; }
     }
-    BrowserTTS.stop(); State.browserTtsBuffer = ''; State.browserTtsQueue = [];
     if (replaceAssistantId) { State.activeAssistantId = replaceAssistantId; UI.updateMessage(replaceAssistantId, { text: '', meta: '', pending: true, audioChunks: [], audioSampleRate: 0 }); }
     else State.activeAssistantId = UI.addMessage('assistant', '', '', true);
-    const audioSeconds = attachRawAudio && audio ? estimateWavSecondsFromBase64(audio) : 0;
-    UI.setState('processing'); UI.setStatus('processing', attachRawAudio ? `Processing voice/${micMode}` : 'Processing');
-    State.ws.send(JSON.stringify({
-      type: outgoingText ? 'text' : (attachRawAudio ? 'audio' : 'image'),
+    UI.setState('processing'); UI.setStatus('processing', hasAudio || chunked ? 'Processing voice...' : 'Processing');
+    WS.send({
+      type: outgoingText ? 'text' : 'audio',
       request_id: State.activeRequestId, chat_id: State.activeChatId,
-      text: outgoingText, transcription: spokenText,
-      audio: attachRawAudio ? audio : null, audio_mode: micMode, audio_seconds: audioSeconds,
+      text: outgoingText, transcription: '',
+      audio: hasAudio ? audio : null, chunked: !!chunked,
       frames, images, lang: 'en', voice: State.appSettings.voice || '',
       system_prompt: $('systemPrompt').value || '', history: hist,
       settings: {
         temperature: Number(State.appSettings.temperature), top_p: Number(State.appSettings.top_p), top_k: Number(State.appSettings.top_k),
         max_output_tokens: Number(State.appSettings.max_output_tokens), enable_thinking: false,
-        tts_mode: Settings.ttsMode(), tts_engine: State.appSettings.ttsEngine || 'supertonic', voice: State.appSettings.voice || '',
-        silero_speaker: State.appSettings.sileroSpeaker || 'baya', silero_speed: Number(State.appSettings.sileroSpeed || 1.0), audio_input_mode: micMode,
+        tts_mode: 'server', tts_engine: State.appSettings.ttsEngine || 'silero', voice: State.appSettings.voice || '',
+        silero_speaker: State.appSettings.sileroSpeaker || 'xenia', silero_speed: Number(State.appSettings.sileroSpeed || 1.0),
+        audio_pipeline: State.appSettings.audioPipeline || 'native', stt_model: State.appSettings.sttModel || 'turbo',
       },
-    }));
+    });
   },
   replayAssistantMessage(id) {
     const m = State.messages.find(x => x.id === id); if (!m) return;
     const cached = State.messageAudioCache.get(id) || (Array.isArray(m.audioChunks) && m.audioChunks.length ? { chunks: m.audioChunks, sampleRate: m.audioSampleRate || CONFIG.AUDIO.DEFAULT_SAMPLE_RATE } : null);
-    if (cached && cached.chunks && cached.chunks.length) { State.streamSampleRate = cached.sampleRate || CONFIG.AUDIO.DEFAULT_SAMPLE_RATE; AudioPlayback.startStream(); for (const chunk of cached.chunks) AudioPlayback.queueChunk(chunk); return; }
+    if (cached && cached.chunks && cached.chunks.length) { State.streamSampleRate = cached.sampleRate || CONFIG.AUDIO.DEFAULT_SAMPLE_RATE; AudioPlayback.stop(); AudioPlayback.ensureCtx(); State.streamNextTime = State.audioCtx.currentTime + 0.06; UI.setState('speaking'); for (const chunk of cached.chunks) AudioPlayback.queueChunk(chunk); return; }
     const text = textOfMessage(m); if (!text) return;
-    if (Settings.ttsMode() === 'browser' && BrowserTTS.supported()) { BrowserTTS.stop(); State.browserTtsBuffer = text; BrowserTTS.enqueue('', { force: true }); return; }
-    if (State.ws && State.ws.readyState === WebSocket.OPEN) { const requestId = `tts-${Date.now()}-${Math.random().toString(16).slice(2)}`; State.replayTargets.set(requestId, id); State.ws.send(JSON.stringify({ type: 'tts', request_id: requestId, chat_id: State.activeChatId, text, voice: State.appSettings.voice || '', tts_engine: State.appSettings.ttsEngine || 'supertonic', silero_speaker: State.appSettings.sileroSpeaker || 'baya', silero_speed: Number(State.appSettings.sileroSpeed || 1.0) })); UI.setStatus('processing', 'TTS replay'); }
-    else if ('speechSynthesis' in window) { speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(text)); }
+    const requestId = `tts-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    State.replayTargets.set(requestId, id);
+    WS.send({ type: 'tts', request_id: requestId, chat_id: State.activeChatId, text, voice: State.appSettings.voice || '', tts_engine: State.appSettings.ttsEngine || 'silero', silero_speaker: State.appSettings.sileroSpeaker || 'xenia', silero_speed: Number(State.appSettings.sileroSpeed || 1.0) });
+    UI.setStatus('processing', 'TTS replay');
   },
-  continueAssistantMessage(id) { const idx = State.messages.findIndex(m => m.id === id); if (idx < 0) return; const hist = this.buildHistoryUntilIndex(idx + 1); this.execute({ text: 'Continue the previous answer from where it stopped. Do not repeat the beginning.', historyOverride: hist, suppressUserEcho: true }); },
-  regenerateAssistantMessage(id) { const idx = State.messages.findIndex(m => m.id === id); if (idx < 0) return; const userIdx = this.previousUserMessageIndex(idx); if (userIdx < 0) return; const promptText = textOfMessage(State.messages[userIdx]); const hist = this.buildHistoryUntilIndex(userIdx); this.execute({ text: promptText, historyOverride: hist, suppressUserEcho: true, replaceAssistantId: id }); },
+  continueAssistantMessage(id) { const idx = State.messages.findIndex(m => m.id === id); if (idx < 0) return; this.execute({ text: 'Continue the previous answer from where it stopped. Do not repeat the beginning.', historyOverride: this.buildHistoryUntilIndex(idx + 1), suppressUserEcho: true }); },
+  regenerateAssistantMessage(id) { const idx = State.messages.findIndex(m => m.id === id); if (idx < 0) return; const userIdx = this.previousUserMessageIndex(idx); if (userIdx < 0) return; this.execute({ text: textOfMessage(State.messages[userIdx]), historyOverride: this.buildHistoryUntilIndex(userIdx), suppressUserEcho: true, replaceAssistantId: id }); },
 };
-
+/* ══ 15. WAVEFORM ══ */
 function drawWave() {
   const c = $('waveform'), ctx = c.getContext('2d'), r = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
   if (c.width !== Math.round(r.width * dpr)) { c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
   ctx.clearRect(0, 0, r.width, r.height);
   const bars = 16, gap = 2, bw = (r.width - (bars - 1) * gap) / bars;
-  const [color] = STATE_COLORS[State.appState] || STATE_COLORS.loading; ctx.fillStyle = color;
+  ctx.fillStyle = (STATE_COLORS[State.appState] || STATE_COLORS.loading)[0];
   let data = null; if (State.analyser) { data = new Uint8Array(State.analyser.frequencyBinCount); State.analyser.getByteFrequencyData(data); }
   for (let i = 0; i < bars; i++) {
     let amp = 0.05 + Math.sin(Date.now() / 450 + i * 0.65) * 0.025;
@@ -1292,21 +991,18 @@ function drawWave() {
   }
   ctx.globalAlpha = 1; requestAnimationFrame(drawWave);
 }
-
+/* ══ 16. EVENTS ══ */
 function bindEvents() {
   $('sendBtn').onclick = () => { const v = $('textInput').value.trim(); if (v) { $('textInput').value = ''; SendPayload.execute({ text: v }); } };
   $('textInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('sendBtn').click(); } });
-  $('resetBtn').onclick = () => { State.messages = []; Chats.current().messages = []; UI.renderMessages(); State.activeAssistantId = null; if (State.ws && State.ws.readyState === 1) State.ws.send(JSON.stringify({ type: 'reset', chat_id: State.activeChatId })); AudioPlayback.stop(); UI.setState('listening'); };
+  $('resetBtn').onclick = () => { State.messages = []; Chats.current().messages = []; UI.renderMessages(); State.activeAssistantId = null; WS.send({ type: 'reset', chat_id: State.activeChatId }); AudioPlayback.stop(); UI.setState('listening'); };
   const micButton = $('micBtn');
-  async function beginMicHold(e) { e?.preventDefault?.(); e?.stopPropagation?.(); if (e?.pointerId != null) { State.micPointerId = e.pointerId; try { micButton?.setPointerCapture(e.pointerId); } catch {} } await Mic.startRecording(); }
-  function endMicHold(e) { e?.preventDefault?.(); e?.stopPropagation?.(); if (e?.pointerId != null) { try { micButton?.releasePointerCapture(e.pointerId); } catch {} } State.micPointerId = null; Mic.stopRecording(); }
+  const beginMicHold = (e) => { e?.preventDefault?.(); e?.stopPropagation?.(); Mic.startRecording(); };
+  const endMicHold = (e) => { e?.preventDefault?.(); e?.stopPropagation?.(); Mic.stopRecording(); };
   micButton?.addEventListener('pointerdown', beginMicHold); micButton?.addEventListener('pointerup', endMicHold); micButton?.addEventListener('pointercancel', endMicHold);
-  micButton?.addEventListener('mousedown', (e) => { if (!State.micHoldActive) beginMicHold(e); });
-  window.addEventListener('mouseup', (e) => { if (State.micHoldActive) endMicHold(e); });
   micButton?.addEventListener('touchstart', (e) => { if (!State.micHoldActive) beginMicHold(e); }, { passive: false });
   window.addEventListener('touchend', (e) => { if (State.micHoldActive) endMicHold(e); }, { passive: false });
   window.addEventListener('blur', () => { if (State.micHoldActive) Mic.stopRecording(); });
-  document.addEventListener('visibilitychange', () => { if (document.hidden && State.micHoldActive) Mic.stopRecording(); });
   $('autoMicBtn')?.addEventListener('click', () => AutoMic.setEnabled(!State.autoMicEnabled));
   $('screenAutoMicBtn')?.addEventListener('click', () => AutoMic.setEnabled(!State.autoMicEnabled));
   $('cameraToggle').onclick = async () => { await Vision.startMediaIfNeeded(); State.cameraEnabled = !State.cameraEnabled; $('cameraToggle').classList.toggle('active', State.cameraEnabled); $('cameraToggle').textContent = State.cameraEnabled ? 'Camera On' : 'Camera Off'; $('cameraVideo').style.opacity = State.cameraEnabled ? 1 : 0.25; };
@@ -1350,16 +1046,35 @@ function bindEvents() {
   $('saveSettingsBtn')?.addEventListener('click', () => { const oldWs = Settings.getActiveWsUrl(); Settings.readForm(); UI.closeSettings(); if (Settings.getActiveWsUrl() !== oldWs) { try { State.ws?.close(); } catch {} WS.connect(); } });
   $('resetSettingsBtn')?.addEventListener('click', () => { State.appSettings = { ...DEFAULT_SETTINGS }; Settings.save(); Settings.fillForm(); });
   $('systemPrompt')?.addEventListener('input', () => Chats.saveActive());
+  $('uploadContextBtn')?.addEventListener('click', () => {
+    const input = document.createElement('input'); input.type = 'file'; input.accept = '.txt,.md,.csv';
+    input.onchange = async () => {
+      if (!input.files?.length) return;
+      const text = await input.files[0].text();
+      try { const res = await fetch('/api/upload_context', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }); const data = await res.json(); if (data.ok) alert(`Context loaded: ${data.chars} chars`); }
+      catch (e) { alert('Upload failed: ' + e.message); }
+    };
+    input.click();
+  });
+  $('clearContextBtn')?.addEventListener('click', async () => { if (!confirm('Clear imported context?')) return; try { await fetch('/api/clear_context', { method: 'POST' }); alert('Context cleared'); } catch (e) { alert('Clear failed: ' + e.message); } });
 }
-
+/* ══ 17. INIT ══ */
 (async function init() {
   State.appSettings = Settings.load();
   State.chats = Chats.load();
   State.activeChatId = localStorage.getItem(CONFIG.STORAGE_KEYS.ACTIVE_CHAT) || (State.chats[0] && State.chats[0].id) || Chats.create('New chat').id;
   AudioFocus.init(); UI.setState('loading'); Chats.loadActive();
-  await Vision.startMedia(); WS.connect(); drawWave(); Vision.restartLiveFrameRecorder(); AutoMic.updateUI(); bindEvents();
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    $('modelLabel').textContent = `${data.backend || 'backend'} · ${data.model_label || data.model || 'model'}`;
+    $('launcherLabel').textContent = `bat: ${data.launcher_name || 'unknown'}`;
+    if (data.supports_native_audio === false && State.appSettings.audioPipeline === 'native') { State.appSettings.audioPipeline = 'stt'; Settings.save(); }
+  } catch (e) { console.warn('status fetch failed', e); }
+  await Vision.startMedia();
+  WS.connect(); drawWave(); Vision.restartLiveFrameRecorder(); AutoMic.updateUI(); bindEvents();
   if (State.appSettings.autoVoice) setTimeout(() => AutoMic.setEnabled(true), CONFIG.TIMERS.AUTO_MIC_INIT_DELAY_MS);
-  setTimeout(() => { UI.setState('listening'); if (State.autoMicEnabled) AutoMic.ensureListening(); }, CONFIG.TIMERS.AUTO_MIC_LISTENING_DELAY_MS);
+  setTimeout(() => { UI.setState('listening'); }, CONFIG.TIMERS.AUTO_MIC_LISTENING_DELAY_MS);
 })();
 </script>
 </body>
